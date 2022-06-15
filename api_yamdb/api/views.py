@@ -1,4 +1,7 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
+
+from .serializers import TokenSerializer
 
 from reviews.models import Titles, Genres, Categories
 from .serializers import TitlesSerializer, GenrestSerializer, CategoriesSerializer
@@ -17,3 +20,7 @@ class GenresViewSet(viewsets.ModelViewSet):
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
+
+
+class TokenView(APIView):
+    serializer_class = TokenSerializer
