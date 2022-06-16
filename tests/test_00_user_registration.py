@@ -163,8 +163,8 @@ class Test00UserRegistration:
         )
 
         new_user.delete()
-
     @pytest.mark.django_db(transaction=True)
+
     def test_00_obtain_jwt_token_invalid_data(self, client):
 
         request_type = 'POST'
