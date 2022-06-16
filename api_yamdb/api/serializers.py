@@ -1,21 +1,37 @@
-from reviews.models import User
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Titles, Genres, Categories
+
+from reviews.models import Titles, Genres, Categories, User
 
 
+User = get_user_model()
 
-# class TokenSerializer(TokenObtainPairSerializer):
-#     @classmethod
-#     def get_token(cls, user):
-#         token = super().get_token(user)
 
-#         token['username'] = user.name
-#         token['confirmation_code'] = user.confirmation_code
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=256)
 
-#         return
+    class Meta:
+        model = User
+        fields = ('confirmation_code', 'username', )
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'username',)
+
+
+class UsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'email', 'username', 'first_name',
+            'last_name', 'bio', 'role',
+        )
+
 
 class TitlesSerializer(serializers.ModelSerializer):
     genre = SlugRelatedField(
