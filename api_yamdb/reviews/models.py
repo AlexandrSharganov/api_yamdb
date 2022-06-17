@@ -1,7 +1,14 @@
+from tabnanny import verbose
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.tokens import default_token_generator
 from django.db import models
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+from .utils import confirmation_code_generator
+
 
 
 class User(AbstractUser):
@@ -25,6 +32,18 @@ class User(AbstractUser):
     bio = models.TextField(
         'Биография',
         blank=True,
+    )
+
+    email = models.EmailField(
+        verbose_name='электронная почта',
+        max_length=255,
+        unique=True,
+    )
+    
+    confirmation_code = models.CharField(
+        verbose_name='код подтверждения',
+        max_length=10,
+        default=confirmation_code_generator(),
     )
 
     def __str__(self):
