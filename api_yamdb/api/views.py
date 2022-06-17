@@ -4,6 +4,9 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import viewsets, status, permissions
 from rest_framework.views import APIView
+from rest_framework import filters
+
+from .paginations import CategoriesPagination, GenresPagination, TitlesPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -59,7 +62,7 @@ class TokenViewSet(APIView):
             status=status.HTTP_200_OK
         )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+      
 
 class UsersViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
@@ -70,21 +73,28 @@ class UsersViewSet(viewsets.ModelViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    pagination_class = TitlesPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
-
+    
 class GenresViewSet(viewsets.ModelViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenrestSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    pagination_class = GenresPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
-
-
-
-class TokenView(APIView):
-    serializer_class = TokenSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    pagination_class = CategoriesPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
