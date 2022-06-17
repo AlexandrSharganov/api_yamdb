@@ -7,15 +7,15 @@ from reviews.models import Titles, Genres, Categories
 
 
 
-# class TokenSerializer(TokenObtainPairSerializer):
-#     @classmethod
-#     def get_token(cls, user):
-#         token = super().get_token(user)
+class TokenSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
 
-#         token['username'] = user.name
-#         token['confirmation_code'] = user.confirmation_code
+        token['username'] = user.name
+        token['confirmation_code'] = user.confirmation_code
 
-#         return
+        pass
 
 class TitlesSerializer(serializers.ModelSerializer):
     genre = SlugRelatedField(
@@ -36,11 +36,11 @@ class GenrestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genres
-        fields = '__all__'
+        exclude = ('id',)
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Categories
-        fields = '__all__'
+        exclude = ('id',)
