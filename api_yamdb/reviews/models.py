@@ -13,9 +13,9 @@ from .utils import confirmation_code_generator
 
 class User(AbstractUser):
     ANONYMOUS = 'ANON'
-    USER = 'USER'
-    MODERATOR = 'MOD'
-    ADMIN = 'ADM'
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
     ROLES = [ 
         (ANONYMOUS, 'Anonymous'),
         (USER, 'User'),
@@ -24,7 +24,7 @@ class User(AbstractUser):
     ]
     
     role = models.CharField(
-        max_length=4,
+        max_length=45,
         choices=ROLES,
         default=USER,
     )
@@ -75,18 +75,34 @@ class Genres(models.Model):
 class Titles(models.Model):
     name = models.CharField(max_length=200)
     year = models.IntegerField()
-    description = models.TextField()
-    genre = models.ForeignKey(
-        Genres, on_delete=models.SET_NULL,
-        related_name='titles', blank=True, null=True
-    )
     category = models.ForeignKey(
         Categories, on_delete=models.SET_NULL,
         related_name='titles', blank=True, null=True
     )
+    genre = models.ManyToManyField(Genres, through='GenreTitle')
+    description = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ('name',)
+
+
+class GenreTitle(models.Model):
+    title = models.ForeignKey(
+        Titles,
+        on_delete=models.CASCADE,
+    )
+    genre = models.ForeignKey(
+        Genres,
+        on_delete=models.CASCADE,
+    )
+
+    class Meta():
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'genre'],
+                name='unique_title_genre'
+            ),
+        ]
 
 
 class Review(models.Model):

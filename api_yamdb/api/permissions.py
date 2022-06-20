@@ -11,3 +11,14 @@ class IsAuthorOrModeratorPermission(permissions.BasePermission):
                 or request.user.is_moderator)
                 )
         )
+
+
+class AdminPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return(
+            request.method in permissions.SAFE_METHODS
+            or (
+                request.user.is_authenticated
+                and request.user.role == 'admin'
+            )
+        )
