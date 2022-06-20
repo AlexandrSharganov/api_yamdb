@@ -98,12 +98,8 @@ class TitlesViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     filterset_class  = GenreFilter
 
-    # def get_queryset(self):
-    #     genre = self.request.kwargs()
-    #     return super().get_queryset()
-
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.request.method == 'GET':
             return TitlesSerializer
         return TitlesPostSerializer 
 
