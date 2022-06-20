@@ -73,17 +73,20 @@ class UsersViewSet(viewsets.ModelViewSet):
     get_queryset = User.objects.all()
 
 
-# class GenreFilter(django_filters.FilterSet):
+class GenreFilter(django_filters.FilterSet):
 # # class GenreFilter(filters.BaseFilterBackend):
 # #     def filter_queryset(self, request, queryset, view):
 # #         return queryset.filter(genre=request.titles.genre)
 #     genre = ModelChoiceFilter(
 
 #     )
-
-#     class Meta:
-#         model = Titles
-#         fields = ('slug',)
+    genre = django_filters.CharFilter(field_name='genre__slug')
+    category = django_filters.CharFilter(field_name='category__slug')
+    year = django_filters.NumberFilter(field_name='year')
+    name = django_filters.CharFilter(field_name='name', lookup_expr='icontains')
+    class Meta:
+        model = Titles
+        fields = ('genre', 'category', 'year', 'name')
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
@@ -93,7 +96,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
     pagination_class = TitlesPagination
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('name',)
-    # filterset_class  = GenreFilter
+    filterset_class  = GenreFilter
 
     # def get_queryset(self):
     #     genre = self.request.kwargs()
