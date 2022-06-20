@@ -17,6 +17,7 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('confirmation_code', 'username', )
+        required_fields = ('username', 'confirmation_code')
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -26,12 +27,14 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class UsersSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = (
             'email', 'username', 'first_name',
             'last_name', 'bio', 'role',
         )
+        required_fields = ('email', 'username',)
 
 
 class TitlesSerializer(serializers.ModelSerializer):

@@ -12,15 +12,15 @@ from .utils import confirmation_code_generator
 
 
 class User(AbstractUser):
-    ANONYMOUS = 'ANON'
-    USER = 'USER'
-    MODERATOR = 'MOD'
-    ADMIN = 'ADM'
+    ANONYMOUS = 'anonymous'
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
     ROLES = [ 
-        (ANONYMOUS, 'Anonymous'),
-        (USER, 'User'),
-        (MODERATOR, 'Moderator'),
-        (ADMIN, 'Admin'),
+        (ANONYMOUS, 'anonymous'),
+        (USER, 'user'),
+        (MODERATOR, 'moderator'),
+        (ADMIN, 'admin'),
     ]
     
     role = models.CharField(
