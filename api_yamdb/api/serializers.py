@@ -7,7 +7,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from .utils import CurrentTitleDefault
 
 
-from reviews.models import Titles, Genres, Categories, User, Review, Comment, GenreTitle
+from reviews.models import Title, Genres, Categories, User, Review, Comment, GenreTitle
 
 
 User = get_user_model()
@@ -65,7 +65,7 @@ class TitlesSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Titles
+        model = Title
         fields = '__all__'
 
 
@@ -82,7 +82,7 @@ class TitlesPostSerializer(serializers.ModelSerializer):
         required=False
     )
     class Meta:
-        model = Titles
+        model = Title
         fields = '__all__'
 
 
@@ -172,4 +172,4 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'review', 'text', 'pub_date')
+        fields = ('id', 'author', 'text', 'pub_date')

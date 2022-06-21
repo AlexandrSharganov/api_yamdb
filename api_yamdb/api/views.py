@@ -15,7 +15,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from .permissions import IsAuthorOrModeratorPermission, AdminPermission, IsAdmin
 from .paginations import CategoriesPagination, GenresPagination, TitlesPagination
 from .utils import send_verification_mail
-from reviews.models import Titles, Genres, Categories, Comment, Review
+from reviews.models import Title, Genres, Categories, Comment, Review
 from .serializers import (TitlesSerializer, GenrestSerializer,
                           CategoriesSerializer, TokenSerializer,
                           SignUpSerializer, UsersSerializer, ReviewSerializer, CommentSerializer, TitlesPostSerializer)
@@ -117,12 +117,12 @@ class GenreFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(field_name='name', lookup_expr='icontains')
     
     class Meta:
-        model = Titles
+        model = Title
         fields = ('genre', 'category', 'year', 'name')
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     serializer_class = TitlesPostSerializer
     permission_classes = (AdminPermission,)
     pagination_class = TitlesPagination
@@ -175,11 +175,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     #     title = get_object_or_404(Titles, id=title_id)
     #     return title.reviews.all()
     def get_queryset(self):
-        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
 
 

@@ -2,7 +2,7 @@ from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from reviews.models import Titles
+from reviews.models import Title
 
 User = get_user_model()
 
@@ -11,7 +11,7 @@ class CurrentTitleDefault:
 
     def __call__(self, serializer_field):
         title_id = serializer_field.context['view'].kwargs.get('title_id')
-        return get_object_or_404(Titles, id=title_id)
+        return get_object_or_404(Title, id=title_id)
 
     def __repr__(self):
         return '%s()' % self.__class__.__name__

@@ -1,4 +1,3 @@
-from tabnanny import verbose
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
 from django.db import models
@@ -74,7 +73,7 @@ class Genres(models.Model):
         ordering = ('name',)
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.IntegerField()
     category = models.ForeignKey(
@@ -90,7 +89,7 @@ class Titles(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
     )
     genre = models.ForeignKey(
@@ -115,7 +114,7 @@ class Review(models.Model):
         verbose_name='Автор'
     )
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Произведение'
