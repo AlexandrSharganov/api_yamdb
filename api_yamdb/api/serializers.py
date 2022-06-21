@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -6,7 +7,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from .utils import CurrentTitleDefault
 
 
-from reviews.models import Titles, Genres, Categories, User, Review, Comment
+from reviews.models import Titles, Genres, Categories, User, Review, Comment, GenreTitle
 
 
 User = get_user_model()
@@ -18,6 +19,7 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('confirmation_code', 'username', )
+        required_fields = ('username', 'confirmation_code')
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -27,22 +29,39 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class UsersSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = (
             'email', 'username', 'first_name',
             'last_name', 'bio', 'role',
         )
+        required_fields = ('email', 'username',)
+
+
+
+
+
+
+class GenrestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genres
+        fields = ('name', 'slug')
+
+
+class CategoriesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Categories
+        exclude = ('id',)
 
 
 class TitlesSerializer(serializers.ModelSerializer):
-    genre = SlugRelatedField(
-        slug_field='slug',
-        queryset=Genres.objects.all(),
-    )
-    category = SlugRelatedField(
-        slug_field='slug',
-        queryset=Categories.objects.all(),
+    category = CategoriesSerializer(required=False,)
+    genre = GenrestSerializer(
+        many=True,
+        required=False,
     )
 
     class Meta:
@@ -50,18 +69,52 @@ class TitlesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class GenrestSerializer(serializers.ModelSerializer):
-
+class TitlesPostSerializer(serializers.ModelSerializer):
+    category = SlugRelatedField(
+        slug_field='slug',
+        queryset=Categories.objects.all(),
+        required=False
+    )
+    genre = SlugRelatedField(
+        slug_field='slug',
+        queryset=Genres.objects.all(),
+        many=True,
+        required=False
+    )
     class Meta:
-        model = Genres
+        model = Titles
         fields = '__all__'
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Categories
-        fields = '__all__'
+    # def create(self, validated_data):
+        # if ('genres' in self.initial_data
+        #      and self.initial_data['genres'] is 'string'):
+        #      slug = self.initial_data['genres']
+        #      genre_object = get_object_or_404(Genres, slug=slug)
+        #      genre_name = genre_object.name
+        #      self.initial_data['genres'] = {
+        #         'name': genre_name,
+        #         'slug': slug,
+        #      }
+        # genres = validated_data.pop('genres')
+        # title = Titles.objects.create(**validated_data)
+
+        # for genre in genres:
+        #     current_genre, status = Genres.objects.get_or_create(
+        #         **genre)
+        #     GenreTitle.objects.create(
+        #         genre=current_genre, title=title)
+        # return title 
+
+
+
+
+
+
+
+
+
 
 
 class ReviewSerializer(serializers.ModelSerializer):
