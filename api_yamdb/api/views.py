@@ -93,15 +93,22 @@ class ReviewViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly,
         IsAuthorOrModeratorPermission]
 
-    def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, id=title_id)
-        serializer.save(author=self.request.user, title=title)
+    # def perform_create(self, serializer):
+    #     title_id = self.kwargs.get('title_id')
+    #     title = get_object_or_404(Titles, id=title_id)
+    #     serializer.save(author=self.request.user, title=title)
 
+    # def get_queryset(self):
+    #     title_id = self.kwargs.get('title_id')
+    #     title = get_object_or_404(Titles, id=title_id)
+    #     return title.reviews.all()
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, id=title_id)
+        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
         return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -110,17 +117,25 @@ class CommentViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly,
         IsAuthorOrModeratorPermission]
 
-    def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, id=title_id)
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id, title=title)
-        serializer.save(author=self.request.user, review=review)
+    # def perform_create(self, serializer):
+    #     title_id = self.kwargs.get('title_id')
+    #     title = get_object_or_404(Titles, id=title_id)
+    #     review_id = self.kwargs.get('review_id')
+    #     review = get_object_or_404(Review, id=review_id, title=title)
+    #     serializer.save(author=self.request.user, review=review)
 
+    # def get_queryset(self):
+    #     title_id = self.kwargs.get('title_id')
+    #     title = get_object_or_404(Titles, id=title_id)
+    #     review_id = self.kwargs.get('review_id')
+    #     review = get_object_or_404(Review, id=review_id, title=title)
+    #     return Comment.objects.filter(review=review)
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, id=title_id)
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id, title=title)
-        return Comment.objects.filter(review=review)
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'),
+                                   title=self.kwargs.get('title_id'))
+        return review.comments.all()
 
+    def perform_create(self, serializer):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'),
+                                   title=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, review=review)
