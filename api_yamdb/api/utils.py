@@ -6,6 +6,7 @@ from reviews.models import Title
 
 User = get_user_model()
 
+
 class CurrentTitleDefault:
     requires_context = True
 

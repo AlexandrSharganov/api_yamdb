@@ -1,13 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
+
 from .utils import CurrentTitleDefault
-
-
-from reviews.models import Title, Genres, Categories, User, Review, Comment, GenreTitle
+from reviews.models import Title, Genres, Categories, User, Review, Comment
 
 
 User = get_user_model()
@@ -39,10 +37,6 @@ class UsersSerializer(serializers.ModelSerializer):
         required_fields = ('email', 'username',)
 
 
-
-
-
-
 class GenrestSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -63,6 +57,7 @@ class TitlesSerializer(serializers.ModelSerializer):
         many=True,
         required=False,
     )
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -81,40 +76,11 @@ class TitlesPostSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
+    rating = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Title
         fields = '__all__'
-
-
-
-    # def create(self, validated_data):
-        # if ('genres' in self.initial_data
-        #      and self.initial_data['genres'] is 'string'):
-        #      slug = self.initial_data['genres']
-        #      genre_object = get_object_or_404(Genres, slug=slug)
-        #      genre_name = genre_object.name
-        #      self.initial_data['genres'] = {
-        #         'name': genre_name,
-        #         'slug': slug,
-        #      }
-        # genres = validated_data.pop('genres')
-        # title = Titles.objects.create(**validated_data)
-
-        # for genre in genres:
-        #     current_genre, status = Genres.objects.get_or_create(
-        #         **genre)
-        #     GenreTitle.objects.create(
-        #         genre=current_genre, title=title)
-        # return title 
-
-
-
-
-
-
-
-
-
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -142,26 +108,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Оценка от 1 до 10!')
         return data
-
-# class ReviewsSerializer(serializers.ModelSerializer):
-    # author = serializers.SlugRelatedField(slug_field='username',
-    #                                       read_only=True)
-    # score = serializers.IntegerField(min_value=1, max_value=10)
-
-    # def validate(self, data):
-    #     title_id = self.context['view'].kwargs.get('title_id')
-    #     user = self.context['request'].user
-    #     if self.context['request'].method == 'PATCH':
-    #         return data
-    #     is_review_exists = Review.objects.filter(title=title_id,
-    #                                              author=user).exists()
-    #     if is_review_exists:
-    #         raise serializers.ValidationError('Вы уже оставили отзыв.')
-    #     return data
-
-    # class Meta:
-    #     model = Review
-    #     fields = ('id', 'pub_date', 'author', 'text', 'score')
 
 
 class CommentSerializer(serializers.ModelSerializer):
