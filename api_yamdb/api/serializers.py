@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
+from .utils import CurrentTitleDefault
 
 
 from reviews.models import Titles, Genres, Categories, User, Review, Comment, GenreTitle
@@ -122,7 +123,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='username'
     )
-    # title =
+    title = serializers.HiddenField(
+        default=CurrentTitleDefault())
 
     class Meta:
         model = Review
@@ -134,6 +136,32 @@ class ReviewSerializer(serializers.ModelSerializer):
                 fields=('author', 'title')
             )
         ]
+
+    def validate(self, data):
+        if not 1 <= data['score'] <= 10:
+            raise serializers.ValidationError(
+                'Оценка от 1 до 10!')
+        return data
+
+# class ReviewsSerializer(serializers.ModelSerializer):
+    # author = serializers.SlugRelatedField(slug_field='username',
+    #                                       read_only=True)
+    # score = serializers.IntegerField(min_value=1, max_value=10)
+
+    # def validate(self, data):
+    #     title_id = self.context['view'].kwargs.get('title_id')
+    #     user = self.context['request'].user
+    #     if self.context['request'].method == 'PATCH':
+    #         return data
+    #     is_review_exists = Review.objects.filter(title=title_id,
+    #                                              author=user).exists()
+    #     if is_review_exists:
+    #         raise serializers.ValidationError('Вы уже оставили отзыв.')
+    #     return data
+
+    # class Meta:
+    #     model = Review
+    #     fields = ('id', 'pub_date', 'author', 'text', 'score')
 
 
 class CommentSerializer(serializers.ModelSerializer):

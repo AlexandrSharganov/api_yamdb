@@ -16,11 +16,15 @@ router_v1.register('genres', GenresViewSet, basename='genres')
 router_v1.register('categories', CategoriesViewSet, basename='categories')
 router_v1.register('users', UsersViewSet, basename='users')
 router_v1.register(
-    r'^titles/(?P<title_id>\d+)/reviews',
+    # r'^titles/(?P<title_id>\d+)/reviews',
+    r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
     basename='review')
 router_v1.register(
-    r'^titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    # r'^titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    # r'titles/(?P<title_id>\d+)/reviews/('
+    # r'?P<review_id>\d+)/comments',
     CommentViewSet,
     basename='comments')
 
