@@ -17,14 +17,14 @@ class User(AbstractUser):
     USER = 'user'
     MODERATOR = 'moderator'
     ADMIN = 'admin'
-    ROLES = [ 
+    ROLES = [
         (ANONYMOUS, 'anonymous'),
         (USER, 'user'),
         (MODERATOR, 'moderator'),
         (ADMIN, 'admin'),
 
     ]
-    
+
     role = models.CharField(
         max_length=10,
         choices=ROLES,
@@ -41,7 +41,7 @@ class User(AbstractUser):
         max_length=255,
         unique=True,
     )
-    
+
     confirmation_code = models.CharField(
         verbose_name='код подтверждения',
         max_length=10,
@@ -137,8 +137,10 @@ class Review(models.Model):
 
     class Meta:
         ordering = ('-pub_date',)
-        verbose_name = 'Отзыв'
-        verbose_name_plural = 'Отзывы'
+        # verbose_name = 'Отзыв'
+        # verbose_name_plural = 'Отзывы'
+        verbose_name = 'Текст'
+        verbose_name_plural = verbose_name
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -174,8 +176,10 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ('-pub_date',)
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарий к отзыву'
+        # verbose_name = 'Комментарий'
+        # verbose_name_plural = 'Комментарий к отзыву'
+        verbose_name = 'Текст'
+        verbose_name_plural = verbose_name
 
     def __str__(self):
         return self.text[:15]
