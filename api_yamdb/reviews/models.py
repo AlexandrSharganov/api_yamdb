@@ -1,18 +1,17 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import RegexValidator
 
-from .utils import confirmation_code_generator
+import api.utils
 
 
 class User(AbstractUser):
 
-    ANONYMOUS = 'anonymous'
     USER = 'user'
     MODERATOR = 'moderator'
     ADMIN = 'admin'
     ROLES = [
-        (ANONYMOUS, 'anonymous'),
         (USER, 'user'),
         (MODERATOR, 'moderator'),
         (ADMIN, 'admin'),
@@ -20,7 +19,7 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(
-        max_length=10,
+        max_length=9,
         choices=ROLES,
         default=USER,
     )
@@ -32,14 +31,32 @@ class User(AbstractUser):
 
     email = models.EmailField(
         verbose_name='электронная почта',
-        max_length=255,
+        max_length=254,
         unique=True,
     )
 
     confirmation_code = models.CharField(
         verbose_name='код подтверждения',
         max_length=10,
-        default=confirmation_code_generator(),
+        default=api.utils.confirmation_code_generator,
+    )
+    first_name = models.CharField(
+        max_length=150,
+        blank=True,
+    )
+    last_name = models.CharField(
+        max_length=150,
+        blank=True,
+    )
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=(r'^[a-zA-Z0-9@.+-_]*$'),
+                message='Username must contain letters, numbers and @.+-_',
+            )
+        ]
     )
 
     def __str__(self):
@@ -69,7 +86,7 @@ class Genres(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.TextField()
     year = models.IntegerField()
     category = models.ForeignKey(
         Categories, on_delete=models.SET_NULL,

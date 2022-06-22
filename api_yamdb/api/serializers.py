@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
-from .utils import CurrentTitleDefault
+from .utils import CurrentTitleDefault, confirmation_code_generator
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 
 
@@ -13,7 +13,7 @@ User = get_user_model()
 
 class TokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=256)
-
+    confirmation_code = serializers.CharField()
     class Meta:
         model = User
         fields = ('confirmation_code', 'username', )

@@ -1,10 +1,8 @@
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from django.core.mail import send_mail
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from reviews.models import Title
-
-User = get_user_model()
+import reviews.models
+from django.utils.crypto import get_random_string
 
 
 class CurrentTitleDefault:
@@ -12,15 +10,19 @@ class CurrentTitleDefault:
 
     def __call__(self, serializer_field):
         title_id = serializer_field.context['view'].kwargs.get('title_id')
-        return get_object_or_404(Title, id=title_id)
+        return get_object_or_404(reviews.models.Title, id=title_id)
 
     def __repr__(self):
         return '%s()' % self.__class__.__name__
 
 
+def confirmation_code_generator():
+    return get_random_string(length=10)
+
+
 def send_verification_mail(email, request):
     confirmation_code = (
-        User.objects.get(username=request.data.get('username'))
+        reviews.models.User.objects.get(username=request.data.get('username'))
         .confirmation_code
     )
     subject = 'Регистрация на сайте'
