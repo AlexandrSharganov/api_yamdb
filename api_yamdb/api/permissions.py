@@ -14,8 +14,6 @@ class IsAuthorOrModerator(permissions.BasePermission):
 
 
 
-
-
 class AdminPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return(
