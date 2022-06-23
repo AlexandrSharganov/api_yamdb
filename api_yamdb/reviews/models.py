@@ -120,22 +120,35 @@ class GenreTitle(models.Model):
         ]
 
 
-class Review(models.Model):
+class ReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reviews',
         verbose_name='Автор'
     )
+    text = models.TextField(
+        verbose_name='Текст',
+        help_text='Введите текст',
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('-pub_date',)
+        verbose_name = 'Текст'
+
+    def __str__(self):
+        return self.text[:15]
+
+
+class Review(ReviewComment):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Произведение'
-    )
-    text = models.TextField(
-        verbose_name='Текст отзыва',
-        help_text='Введите текст отзыва'
+        related_name='reviews'
     )
     score = models.IntegerField(
         validators=[
@@ -143,56 +156,19 @@ class Review(models.Model):
             MinValueValidator(1)
         ]
     )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания'
-    )
 
     class Meta:
-        ordering = ('-pub_date',)
-        # verbose_name = 'Отзыв'
-        # verbose_name_plural = 'Отзывы'
-        verbose_name = 'Текст'
-        verbose_name_plural = verbose_name
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
-                name='unique_author_review'
+                name='unique_author'
             )
         ]
 
-    def __str__(self):
-        return self.text[:15]
 
-
-class Comment(models.Model):
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Автор комментария'
-    )
+class Comment(ReviewComment):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Отзыв'
+        related_name='comments'
     )
-    text = models.TextField(
-        verbose_name='Текст коментария',
-        help_text='Введите текст комментария',
-    )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания'
-    )
-
-    class Meta:
-        ordering = ('-pub_date',)
-        # verbose_name = 'Комментарий'
-        # verbose_name_plural = 'Комментарий к отзыву'
-        verbose_name = 'Текст'
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return self.text[:15]
