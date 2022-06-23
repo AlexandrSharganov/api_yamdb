@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.forms import ValidationError
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -21,6 +22,11 @@ class TokenSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    def validate_username(self, data):
+        if self.initial_data['username'] == 'me':
+            raise ValidationError('Username can not be "me"')
+        return data
+    
     class Meta:
         model = User
         fields = ('email', 'username',)
