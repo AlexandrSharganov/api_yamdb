@@ -92,7 +92,7 @@ class TitlesPostSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
-        read_only=True,
+        queryset=User.objects.all(),
         slug_field='username'
     )
     title = serializers.HiddenField(
@@ -109,19 +109,14 @@ class ReviewSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def validate(self, data):
-        if not 1 <= data['score'] <= 10:
-            raise serializers.ValidationError(
-                'Оценка от 1 до 10!')
-        return data
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True,
+        default=serializers.CurrentUserDefault(),
+        queryset=User.objects.all(),
         slug_field='username'
     )
-
+    
     class Meta:
         model = Comment
         fields = ('id', 'author', 'text', 'pub_date')

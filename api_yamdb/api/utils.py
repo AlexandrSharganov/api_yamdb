@@ -13,7 +13,7 @@ class CurrentTitleDefault:
         return get_object_or_404(reviews.models.Title, id=title_id)
 
     def __repr__(self):
-        return '%s()' % self.__class__.__name__
+        return self.__class__.__name__
 
 
 def confirmation_code_generator():
