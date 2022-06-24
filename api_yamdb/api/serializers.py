@@ -1,26 +1,24 @@
-from django.contrib.auth import get_user_model
+from django.forms import ValidationError
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
-from .utils import CurrentTitleDefault, confirmation_code_generator
+from .utils import CurrentTitleDefault
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 
 
-User = get_user_model()
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=256)
-    confirmation_code = serializers.CharField()
-    class Meta:
-        model = User
-        fields = ('confirmation_code', 'username', )
-        required_fields = ('username', 'confirmation_code')
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=256, required=True)
+    confirmation_code = serializers.CharField(max_length=10, required=True)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    def validate_username(self, data):
+        if self.initial_data['username'] == 'me':
+            raise ValidationError('Username can not be "me"')
+        return data
+
     class Meta:
         model = User
         fields = ('email', 'username',)
@@ -34,7 +32,6 @@ class UsersSerializer(serializers.ModelSerializer):
             'email', 'username', 'first_name',
             'last_name', 'bio', 'role',
         )
-        required_fields = ('email', 'username',)
 
 
 class GenrestSerializer(serializers.ModelSerializer):
@@ -86,7 +83,7 @@ class TitlesPostSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
-        read_only=True,
+        queryset=User.objects.all(),
         slug_field='username'
     )
     title = serializers.HiddenField(
@@ -103,16 +100,11 @@ class ReviewSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def validate(self, data):
-        if not 1 <= data['score'] <= 10:
-            raise serializers.ValidationError(
-                'Оценка от 1 до 10!')
-        return data
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True,
+        default=serializers.CurrentUserDefault(),
+        queryset=User.objects.all(),
         slug_field='username'
     )
 
