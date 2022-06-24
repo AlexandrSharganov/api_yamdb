@@ -14,6 +14,7 @@ User = get_user_model()
 class TokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=256)
     confirmation_code = serializers.CharField()
+
     class Meta:
         model = User
         fields = ('confirmation_code', 'username', )
@@ -110,7 +111,7 @@ class CommentSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(),
         slug_field='username'
     )
-    
+
     class Meta:
         model = Comment
         fields = ('id', 'author', 'text', 'pub_date')

@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from .permissions import IsModerator, AdminPermission, IsAdmin
+from .permissions import IsModeratorOrReadOnly, AdminPermission, IsAdmin
 from .paginations import CategoriesPagination, GenresPagination, TitlesPagination
 from .utils import send_verification_mail
 from reviews.models import Title, Genres, Categories, Review
@@ -166,7 +166,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModerator]
+        IsModeratorOrReadOnly]
 
     def title_object(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -182,7 +182,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModerator]
+        IsModeratorOrReadOnly]
 
     def review_object(self):
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'),
