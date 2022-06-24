@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import models
 
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.views import APIView
@@ -9,14 +10,14 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework import mixins, viewsets, filters
 
 from .permissions import (
-    IsModeratorOrReadOnly, IsAdminOrReadOnly,
-    IsAdmin
+    IsModerOrAdminOrSuperOrReadOnly, IsAdminOrSuperOrReadOnly, IsAdminOrSuper
 )
 from .paginations import (
-    CategoriesPagination,
-    GenresPagination, TitlesPagination
+    GenresAndCategoriesPagination,
+    TitlesPagination
 )
 from .utils import confirmation_code_generator, send_verification_mail
 from reviews.models import Title, Genres, Categories, Review, User
@@ -26,6 +27,20 @@ from .serializers import (
     SignUpSerializer, UsersSerializer, ReviewSerializer,
     CommentSerializer, TitlesPostSerializer
 )
+from .filters import GenreFilter
+
+
+class OnlyNameSlugView(mixins.ListModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
+    """Абстрактная вьюха из name и slug."""
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+    ordering_fields = ('slug',)
+    pagination_class = GenresAndCategoriesPagination
+    permission_classes = (IsAdminOrSuperOrReadOnly,)
 
 
 class SignUpViewSet(APIView):
@@ -69,7 +84,7 @@ class TokenViewSet(APIView):
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdminOrSuper]
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = (
@@ -112,19 +127,13 @@ class UsersViewSet(viewsets.ModelViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     serializer_class = TitlesPostSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrSuperOrReadOnly,)
     pagination_class = TitlesPagination
     filter_backends = (filters.SearchFilter, DjangoFilterBackend,
                        filters.OrderingFilter)
     search_fields = ('name',)
     filterset_class = GenreFilter
-    ordering_fields = (
-        'name',
-        'year',
-        'genre',
-        'category',
-        'rating',
-    )
+    ordering_fields = ('name',)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -135,23 +144,18 @@ class TitlesViewSet(viewsets.ModelViewSet):
 class GenresViewSet(OnlyNameSlugView):
     queryset = Genres.objects.all()
     serializer_class = GenrestSerializer
-    pagination_class = GenresPagination
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class CategoriesViewSet(OnlyNameSlugView):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
-    pagination_class = CategoriesPagination
-    permission_classes = (IsAdminOrReadOnly,)
-
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModeratorOrReadOnly]
+        IsModerOrAdminOrSuperOrReadOnly]
 
     def title_object(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -167,7 +171,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModeratorOrReadOnly]
+        IsModerOrAdminOrSuperOrReadOnly]
 
     def review_object(self):
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'),

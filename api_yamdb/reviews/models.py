@@ -4,7 +4,21 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
 import api.utils
-from api.utils import OnlyNameSlugModel, validate_date_not_in_future
+from api.utils import validate_date_not_in_future
+
+
+class OnlyNameSlugModel(models.Model):
+    """Абстрактная модель из name и slug."""
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(
+        max_length=50,
+        unique=True
+    )
+
+    class Meta:
+        ordering = ('name',)
+        abstract = True
+
 
 
 class User(AbstractUser):
@@ -59,14 +73,15 @@ class User(AbstractUser):
     )
 
     def is_administrator(self):
-        if self.role == self.ADMIN:
-            return True
-        return False
+        return (self.role == self.ADMIN
+                 or self.is_staff
+                 or self.is_superuser)
 
     def is_moderator(self):
-        if self.role == self.MODERATOR:
-            return True
-        return False
+        return (self.role == self.MODERATOR
+                 or self.role == self.ADMIN
+                 or self.is_staff
+                 or self.is_superuser)
 
     def __str__(self):
         return self.username
@@ -83,6 +98,7 @@ class Genres(OnlyNameSlugModel):
 class Title(models.Model):
     name = models.TextField()
     year = models.IntegerField(
+        null=True,
         validators=[validate_date_not_in_future]
     )
     category = models.ForeignKey(

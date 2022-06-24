@@ -2,10 +2,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django.core.exceptions import ValidationError
-from django.db import models
 from django.utils import timezone as tz
-
-from rest_framework import mixins, viewsets, filters
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 import reviews.models
@@ -20,30 +17,6 @@ class CurrentTitleDefault:
 
     def __repr__(self):
         return '{}'.format(self.__class__.__name__)
-
-
-class OnlyNameSlugModel(models.Model):
-    """Абстрактная модель из name и slug."""
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(
-        max_length=50,
-        unique=True
-    )
-
-    class Meta:
-        ordering = ('name',)
-        abstract = True
-
-
-class OnlyNameSlugView(mixins.ListModelMixin,
-                        mixins.CreateModelMixin,
-                        mixins.DestroyModelMixin,
-                        viewsets.GenericViewSet):
-    """Абстрактная вьюха из name и slug."""
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
-    ordering_fields = ('slug',)
 
 
 def confirmation_code_generator():
@@ -65,4 +38,4 @@ def send_verification_mail(email, request):
 
 def validate_date_not_in_future(value):
     if value > tz.now().year:
-        raise ValidationError('date is in the future')
+        raise ValidationError('Нельзя указывать будущую дату!')
