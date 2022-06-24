@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as django_filters
@@ -12,29 +11,32 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from .permissions import IsModeratorOrReadOnly, AdminPermission, IsAdmin
-from .paginations import CategoriesPagination, GenresPagination, TitlesPagination
+
+
+from .permissions import (
+    IsAuthorOrModeratorPermission, AdminPermission,
+    IsAdmin
+)
+from .paginations import (
+    CategoriesPagination,
+    GenresPagination, TitlesPagination
+)
+
 from .utils import send_verification_mail
-from reviews.models import Title, Genres, Categories, Review
-from .serializers import (TitlesSerializer, GenrestSerializer,
-                          CategoriesSerializer, TokenSerializer,
-                          SignUpSerializer, UsersSerializer, ReviewSerializer,
-                          CommentSerializer, TitlesPostSerializer)
-
-
-User = get_user_model()
+from reviews.models import Title, Genres, Categories, Review, User
+from .serializers import (
+    TitlesSerializer, GenrestSerializer,
+    CategoriesSerializer, TokenSerializer,
+    SignUpSerializer, UsersSerializer, ReviewSerializer,
+    CommentSerializer, TitlesPostSerializer
+)
 
 
 class SignUpViewSet(APIView):
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             email = serializer.validated_data.get('email')
-            if request.data.get('username') == 'me':
-                return Response(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             serializer.save()
             send_verification_mail(email, request=request)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -44,9 +46,8 @@ class SignUpViewSet(APIView):
 class TokenViewSet(APIView):
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.data['username']
-        confirmation_code = serializer.data['confirmation_code']
+        username = serializer.initial_data['username']
+        confirmation_code = serializer.initial_data['confirmation_code']
         user = get_object_or_404(User, username=username)
         if user.confirmation_code != confirmation_code:
             return Response(
