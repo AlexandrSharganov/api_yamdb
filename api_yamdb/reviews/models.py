@@ -58,6 +58,16 @@ class User(AbstractUser):
         ]
     )
 
+    def is_administrator(self):
+        if self.role == self.ADMIN:
+            return True
+        return False
+
+    def is_moderator(self):
+        if self.role == self.MODERATOR:
+            return True
+        return False
+
     def __str__(self):
         return self.username
 

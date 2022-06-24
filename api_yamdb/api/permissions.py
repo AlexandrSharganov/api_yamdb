@@ -1,15 +1,14 @@
 from rest_framework import permissions
-from reviews.models import User
 
 
-class IsModerator(permissions.BasePermission):
+class IsModeratorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
             or (request.user.is_authenticated and (
-                request.user.is_staff
-                or User.MODERATOR)
+                request.user.is_administrator()
+                or request.user.is_moderator())
                 )
         )
 
