@@ -18,7 +18,9 @@ from .paginations import (
     CategoriesPagination,
     GenresPagination, TitlesPagination
 )
-from .utils import confirmation_code_generator, send_verification_mail
+from .utils import (
+    confirmation_code_generator, send_verification_mail, OnlyNameSlugView
+)
 from reviews.models import Title, Genres, Categories, Review, User
 from .serializers import (
     TitlesSerializer, GenrestSerializer,
@@ -26,6 +28,7 @@ from .serializers import (
     SignUpSerializer, UsersSerializer, ReviewSerializer,
     CommentSerializer, TitlesPostSerializer
 )
+from .filters import GenreFilter
 
 
 class SignUpViewSet(APIView):
@@ -144,7 +147,6 @@ class CategoriesViewSet(OnlyNameSlugView):
     serializer_class = CategoriesSerializer
     pagination_class = CategoriesPagination
     permission_classes = (IsAdminOrReadOnly,)
-
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

@@ -3,7 +3,6 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
-import api.utils
 from api.utils import OnlyNameSlugModel, validate_date_not_in_future
 
 

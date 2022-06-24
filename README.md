@@ -1,10 +1,10 @@
-## YaMDb
-# Educational project
+# YaMDb
+## Educational project
 YMDB project gathers users' reviews for different works of art
 
 ---
 
-# List of required libraries and frameworks:
+## List of required libraries and frameworks:
 * requests==2.26.0
 * django==2.2.16
 * djangorestframework==3.12.4
@@ -15,7 +15,7 @@ YMDB project gathers users' reviews for different works of art
 * djangorestframework-simplejwt==4.7.2
 * django-filter==21.1
 
-# How to start the project:
+## How to start the project:
 1. Copy the project with SSH and establish a virtual environment:
 ```
 'python -m .venv venv'
@@ -37,7 +37,7 @@ cd .\api_yamdb\
 python manage.py runserver
 ```
 ---
-# Developers:
+## Developers:
 - [fifififanfanfan](https://github.com/fifififanfanfan)
 - [Alexandr Sharganov](https://github.com/AlexandrSharganov)
 - [Stanislav Savitskiy](https://github.com/Stanislav-Sav)

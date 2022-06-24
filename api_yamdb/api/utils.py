@@ -36,9 +36,10 @@ class OnlyNameSlugModel(models.Model):
 
 
 class OnlyNameSlugView(mixins.ListModelMixin,
-                        mixins.CreateModelMixin,
-                        mixins.DestroyModelMixin,
-                        viewsets.GenericViewSet):
+                       mixins.CreateModelMixin,
+                       mixins.DestroyModelMixin,
+                       viewsets.GenericViewSet
+                       ):
     """Абстрактная вьюха из name и slug."""
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -60,7 +61,6 @@ def send_verification_mail(email, request):
     from_email = DEFAULT_FROM_EMAIL
     recipient_list = [email, ]
     send_mail(subject, message, from_email, recipient_list)
-
 
 
 def validate_date_not_in_future(value):
