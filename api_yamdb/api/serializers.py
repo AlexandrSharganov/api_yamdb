@@ -49,16 +49,25 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class TitlesSerializer(serializers.ModelSerializer):
-    category = CategoriesSerializer(required=False,)
+    category = CategoriesSerializer(required=False, read_only=True)
     genre = GenrestSerializer(
         many=True,
         required=False,
+        read_only=True,
     )
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
 
 
 class TitlesPostSerializer(serializers.ModelSerializer):
@@ -73,11 +82,17 @@ class TitlesPostSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
-    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'year',
+            'description',
+            'genre',
+            'category'
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
