@@ -1,4 +1,5 @@
 from django.forms import ValidationError
+from django.utils import timezone as tz
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -91,17 +92,25 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class TitlesSerializer(serializers.ModelSerializer):
-    category = CategoriesSerializer(required=False, read_only=True)
+    category = CategoriesSerializer(required=False)
     genre = GenrestSerializer(
         many=True,
         required=False,
-        read_only=True,
     )
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
         fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
+        read_only_fields = (
             'id',
             'name',
             'year',
@@ -135,6 +144,13 @@ class TitlesPostSerializer(serializers.ModelSerializer):
             'genre',
             'category'
         )
+
+    def validate_year(self, value):
+        if value > tz.now().year:
+            raise serializers.ValidationError(
+                'Нельзя указывать будущую дату!'
+            )
+        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):

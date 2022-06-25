@@ -3,7 +3,20 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
-from api.utils import OnlyNameSlugModel, validate_date_not_in_future
+from api.utils import validate_date_not_in_future
+
+
+class OnlyNameSlugModel(models.Model):
+    """Абстрактная модель из name и slug."""
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(
+        max_length=50,
+        unique=True
+    )
+
+    class Meta:
+        ordering = ('name',)
+        abstract = True
 
 
 class User(AbstractUser):
@@ -83,6 +96,7 @@ class Genres(OnlyNameSlugModel):
 class Title(models.Model):
     name = models.TextField()
     year = models.IntegerField(
+        null=True,
         validators=[validate_date_not_in_future]
     )
     category = models.ForeignKey(
