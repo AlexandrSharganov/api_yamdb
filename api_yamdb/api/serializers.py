@@ -2,7 +2,7 @@ from django.forms import ValidationError
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from rest_framework.validators import UniqueTogetherValidator
 
 from .utils import CurrentTitleDefault
 from reviews.models import Title, Genres, Categories, User, Review, Comment
@@ -89,9 +89,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     title = serializers.HiddenField(
         default=CurrentTitleDefault()
     )
-    score = SlugField(
-        validators=[UniqueValidator(queryset=Review.objects.all())]
-    )
 
     class Meta:
         model = Review
@@ -102,6 +99,12 @@ class ReviewSerializer(serializers.ModelSerializer):
                 fields=('author', 'title')
             )
         ]
+
+    def validate_score(self, value):
+        if not 1 <= value <= 10:
+            raise serializers.ValidationError(
+                'Оценка от 1 до 10!')
+        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):
