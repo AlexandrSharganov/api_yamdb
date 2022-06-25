@@ -1,6 +1,5 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from django.utils.crypto import get_random_string
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone as tz
@@ -47,15 +46,7 @@ class OnlyNameSlugView(mixins.ListModelMixin,
     ordering_fields = ('slug',)
 
 
-def confirmation_code_generator():
-    return get_random_string(length=10)
-
-
-def send_verification_mail(email, request):
-    confirmation_code = (
-        reviews.models.User.objects.get(username=request.data.get('username'))
-        .confirmation_code
-    )
+def send_verification_mail(email, confirmation_code):
     subject = 'Регистрация на сайте'
     message = f'Ваш код для подтверждения регистрации: {confirmation_code}'
     from_email = DEFAULT_FROM_EMAIL
