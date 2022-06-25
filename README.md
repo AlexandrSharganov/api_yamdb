@@ -1,5 +1,5 @@
 # Yamdb
-## Пет-прект
+## Пет-проект
 YaMDb Собирает отзывы и рецензии пользователей на различные произведения
 ---
 ## Список используемых библиотек и фреймворков:
@@ -35,4 +35,4 @@ python manage.py runserver
 ## Разработчики:
 -[Александр Шарганов](https://github.com/AlexandrSharganov)
 -[Станислав Савицкий](https://github.com/fifififanfanfan)
--[иван Чугунов](https://github.com/fifififanfanfan)
+-[Иван Чугунов](https://github.com/fifififanfanfan)
