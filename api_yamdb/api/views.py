@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.crypto import get_random_string
 
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.views import APIView
@@ -12,14 +13,14 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from .permissions import (
     IsModeratorOrReadOnly, IsAdminOrReadOnly,
-    IsAdmin
+    IsAdmin, IsAllowedToSignUp
 )
 from .paginations import (
     CategoriesPagination,
     GenresPagination, TitlesPagination
 )
 from .utils import (
-    confirmation_code_generator, send_verification_mail, OnlyNameSlugView
+    send_verification_mail, OnlyNameSlugView
 )
 from reviews.models import Title, Genres, Categories, Review, User
 from .serializers import (
@@ -32,20 +33,33 @@ from .filters import GenreFilter
 
 
 class SignUpViewSet(APIView):
+    permission_classes = (IsAllowedToSignUp,)
+
     def post(self, request):
-        serializer = SignUpSerializer(data=request.data)
+        confirmation_code = get_random_string(length=10)
+        serializer = SignUpSerializer(
+            data=request.data,
+            context={'confirmation_code': confirmation_code}
+        )
         if serializer.is_valid(raise_exception=True):
-            email = serializer.validated_data.get('email')
-            confirmation_code = confirmation_code_generator()
+            email = serializer.validated_data['email']
             if User.objects.filter(email=email).exists():
-                send_verification_mail(email, request=request)
-            serializer.save(confirmation_code=confirmation_code)
-            send_verification_mail(email, request=request)
+                send_verification_mail(
+                    email=email,
+                    confirmation_code=confirmation_code,
+                )
+            send_verification_mail(
+                email=email,
+                confirmation_code=confirmation_code,
+            )
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TokenViewSet(APIView):
+    permission_classes = (IsAllowedToSignUp,)
+
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -91,12 +105,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = get_object_or_404(User, username=request.user.username)
         if request.method == 'GET':
-            serializer = UsersSerializer(
-                instance=user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
+            serializer = UsersSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         serializer = UsersSerializer(
@@ -105,10 +114,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
-        if request.user.is_superuser or request.user.role == 'admin':
-            serializer.save()
-        else:
-            serializer.save(role=user.role)
+        serializer.save(role=user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

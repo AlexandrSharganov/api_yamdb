@@ -32,3 +32,10 @@ class IsAdmin(permissions.BasePermission):
                 request.user.is_administrator() or request.user.is_superuser
             )
         )
+
+
+class IsAllowedToSignUp(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user
+        )
