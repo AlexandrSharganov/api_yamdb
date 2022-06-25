@@ -14,7 +14,7 @@ from rest_framework.pagination import LimitOffsetPagination
 
 
 from .permissions import (
-    IsAuthorOrModeratorPermission, AdminPermission,
+    IsModerator, AdminPermission,
     IsAdmin
 )
 from .paginations import (
@@ -167,7 +167,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModeratorOrReadOnly]
+        IsModerator]
 
     def title_object(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -183,7 +183,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModeratorOrReadOnly]
+        IsModerator]
 
     def review_object(self):
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'),

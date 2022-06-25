@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
-from django.forms import ValidationError
+from django.forms import SlugField, ValidationError
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from .utils import CurrentTitleDefault, confirmation_code_generator
 from reviews.models import Title, Genres, Categories, User, Review, Comment
@@ -27,7 +27,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         if self.initial_data['username'] == 'me':
             raise ValidationError('Username can not be "me"')
         return data
-    
+
     class Meta:
         model = User
         fields = ('email', 'username',)
@@ -97,12 +97,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username'
     )
     title = serializers.HiddenField(
-        default=CurrentTitleDefault())
+        default=CurrentTitleDefault()
+    )
+    score = SlugField(
+        validators=[UniqueValidator(queryset=Review.objects.all())]
+    )
 
     class Meta:
         model = Review
         fields = ('id', 'author', 'title', 'text', 'score', 'pub_date')
-
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
