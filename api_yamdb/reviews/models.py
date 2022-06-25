@@ -3,8 +3,6 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
-import api.utils
-
 
 class User(AbstractUser):
 
@@ -40,7 +38,6 @@ class User(AbstractUser):
     confirmation_code = models.CharField(
         verbose_name='код подтверждения',
         max_length=10,
-        default=api.utils.confirmation_code_generator,
     )
     first_name = models.CharField(
         max_length=150,

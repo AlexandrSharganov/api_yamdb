@@ -14,15 +14,14 @@ from rest_framework.pagination import LimitOffsetPagination
 
 
 from .permissions import (
-    IsModerator, AdminPermission,
+    IsModerator, IsAdminOrReadOnly,
     IsAdmin
 )
 from .paginations import (
     CategoriesPagination,
     GenresPagination, TitlesPagination
 )
-
-from .utils import send_verification_mail
+from .utils import confirmation_code_generator, send_verification_mail
 from reviews.models import Title, Genres, Categories, Review, User
 from .serializers import (
     TitlesSerializer, GenrestSerializer,
@@ -37,7 +36,10 @@ class SignUpViewSet(APIView):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             email = serializer.validated_data.get('email')
-            serializer.save()
+            confirmation_code = confirmation_code_generator()
+            if User.objects.filter(email=email).exists():
+                send_verification_mail(email, request=request)
+            serializer.save(confirmation_code=confirmation_code)
             send_verification_mail(email, request=request)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -46,6 +48,7 @@ class SignUpViewSet(APIView):
 class TokenViewSet(APIView):
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         username = serializer.initial_data['username']
         confirmation_code = serializer.initial_data['confirmation_code']
         user = get_object_or_404(User, username=username)
@@ -124,7 +127,7 @@ class GenreFilter(django_filters.FilterSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     serializer_class = TitlesPostSerializer
-    permission_classes = (AdminPermission,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = TitlesPagination
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('name',)
@@ -142,7 +145,7 @@ class GenresViewSet(mixins.ListModelMixin,
                     viewsets.GenericViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenrestSerializer
-    permission_classes = (AdminPermission,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = GenresPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -156,7 +159,7 @@ class CategoriesViewSet(mixins.ListModelMixin,
                         viewsets.GenericViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
-    permission_classes = (AdminPermission,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = CategoriesPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)

@@ -1,25 +1,16 @@
-from django.contrib.auth import get_user_model
-from django.forms import SlugField, ValidationError
+from django.forms import ValidationError
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
-from .utils import CurrentTitleDefault, confirmation_code_generator
+from .utils import CurrentTitleDefault
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 
 
-User = get_user_model()
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=256)
-    confirmation_code = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ('confirmation_code', 'username', )
-        required_fields = ('username', 'confirmation_code')
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=256, required=True)
+    confirmation_code = serializers.CharField(max_length=10, required=True)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -41,7 +32,6 @@ class UsersSerializer(serializers.ModelSerializer):
             'email', 'username', 'first_name',
             'last_name', 'bio', 'role',
         )
-        required_fields = ('email', 'username',)
 
 
 class GenrestSerializer(serializers.ModelSerializer):
