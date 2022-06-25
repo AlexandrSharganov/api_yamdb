@@ -144,18 +144,24 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username'
     )
     title = serializers.HiddenField(
-        default=CurrentTitleDefault())
+        default=CurrentTitleDefault()
+    )
 
     class Meta:
         model = Review
         fields = ('id', 'author', 'title', 'text', 'score', 'pub_date')
-
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
                 fields=('author', 'title')
             )
         ]
+
+    def validate_score(self, value):
+        if not 1 <= value <= 10:
+            raise serializers.ValidationError(
+                'Оценка от 1 до 10!')
+        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):
