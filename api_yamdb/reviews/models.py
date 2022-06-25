@@ -3,6 +3,8 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
+from api.utils import OnlyNameSlugModel, validate_date_not_in_future
+
 
 class User(AbstractUser):
 
@@ -10,12 +12,9 @@ class User(AbstractUser):
     MODERATOR = 'moderator'
     ADMIN = 'admin'
     ROLES = [
-
-
         (USER, 'user'),
         (MODERATOR, 'moderator'),
         (ADMIN, 'admin'),
-
     ]
 
     role = models.CharField(
@@ -73,31 +72,19 @@ class User(AbstractUser):
         return self.username
 
 
-class Categories(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(
-        max_length=50,
-        unique=True
-    )
-
-    class Meta:
-        ordering = ('name',)
+class Categories(OnlyNameSlugModel):
+    pass
 
 
-class Genres(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(
-        max_length=50,
-        unique=True
-    )
-
-    class Meta:
-        ordering = ('name',)
+class Genres(OnlyNameSlugModel):
+    pass
 
 
 class Title(models.Model):
     name = models.TextField()
-    year = models.IntegerField()
+    year = models.IntegerField(
+        validators=[validate_date_not_in_future]
+    )
     category = models.ForeignKey(
         Categories, on_delete=models.SET_NULL,
         related_name='titles', blank=True, null=True
