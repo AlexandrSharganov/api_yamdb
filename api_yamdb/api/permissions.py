@@ -8,8 +8,8 @@ class IsModerOrAdminOrSuperOrReadOnly(permissions.BasePermission):
             or obj.author == request.user
             or (request.user.is_authenticated
                 and (request.user.is_administrator()
-                or request.user.is_moderator())
-            )
+                     or request.user.is_moderator())
+                )
         )
 
 
@@ -30,4 +30,11 @@ class IsAdminOrSuper(permissions.BasePermission):
             request.user.is_authenticated and (
                 request.user.is_administrator()
             )
+        )
+
+
+class IsAllowedToSignUp(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user
         )

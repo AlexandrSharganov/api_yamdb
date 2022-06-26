@@ -3,29 +3,71 @@ from django.utils import timezone as tz
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from .utils import CurrentTitleDefault
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=256, required=True)
-    confirmation_code = serializers.CharField(max_length=10, required=True)
+    username = serializers.RegexField(
+        regex=r'^[a-zA-Z0-9@.+-_]*$',
+        max_length=150,
+    )
+    confirmation_code = serializers.CharField()
 
-
-class SignUpSerializer(serializers.ModelSerializer):
-    def validate_username(self, data):
+    def validate_username_for_me(self, data):
         if self.initial_data['username'] == 'me':
-            raise ValidationError('Username can not be "me"')
+            raise ValidationError('Юзернейм не может быть "me"!')
         return data
 
     class Meta:
-        model = User
-        fields = ('email', 'username',)
+        required_fields = ('username', 'confirmation_code',)
+
+
+class SignUpSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        regex=r'^[a-zA-Z0-9@.+-_]*$',
+        max_length=150,
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+
+    def validate_username(self, data):
+        if self.initial_data['username'] == 'me':
+            raise ValidationError('Юзернейм не может быть "me"!')
+        return data
+
+    def create(self, validated_data):
+        validated_data['confirmation_code'] = self.context.get(
+            'confirmation_code'
+        )
+        return User.objects.create(**validated_data)
+
+    class Meta:
+        required_fields = ('email', 'username',)
 
 
 class UsersSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        regex=r'^[a-zA-Z0-9@.+-_]*$',
+        max_length=150,
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+
+    def validate_username_for_me(self, data):
+        if self.initial_data['username'] == 'me':
+            raise ValidationError('Юзернейм не может быть "me"!')
+        return data
 
     class Meta:
         model = User
@@ -118,18 +160,24 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username'
     )
     title = serializers.HiddenField(
-        default=CurrentTitleDefault())
+        default=CurrentTitleDefault()
+    )
 
     class Meta:
         model = Review
         fields = ('id', 'author', 'title', 'text', 'score', 'pub_date')
-
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
                 fields=('author', 'title')
             )
         ]
+
+    def validate_score(self, value):
+        if not 1 <= value <= 10:
+            raise serializers.ValidationError(
+                'Оценка от 1 до 10!')
+        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):

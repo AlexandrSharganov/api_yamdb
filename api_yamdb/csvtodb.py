@@ -37,7 +37,8 @@ with open(
     header = next(csv_reader)
     for row in csv_reader:
         cur.execute(
-            "INSERT INTO reviews_comment(review_id,text,author_id,pub_date) VALUES (?,?,?,?)",
+            """INSERT INTO reviews_comment(review_id,text,author_id,pub_date)
+            VALUES (?,?,?,?)""",
             (
                 str(row[1]),
                 str(row[2]),
@@ -95,7 +96,8 @@ with open(
     header = next(csv_reader)
     for row in csv_reader:
         cur.execute(
-            "INSERT INTO reviews_review(title_id,text,author_id,score,pub_date) VALUES (?,?,?,?,?)",
+            """INSERT INTO reviews_review(title_id,text,author_id,score,pub_date)
+            VALUES (?,?,?,?,?)""",
             (
                 int(row[1]),
                 str(row[2]),
@@ -127,7 +129,7 @@ with open(
 
 path_to_data = Path('static', 'data', 'users.csv')
 current_date = datetime.datetime.now()
-date_data =current_date.strftime('%m/%d/%Y')
+date_data = current_date.strftime('%m/%d/%Y')
 with open(
     path_to_data,
     'r',

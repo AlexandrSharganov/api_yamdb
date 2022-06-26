@@ -3,7 +3,6 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
-import api.utils
 from api.utils import validate_date_not_in_future
 
 
@@ -18,7 +17,6 @@ class OnlyNameSlugModel(models.Model):
     class Meta:
         ordering = ('name',)
         abstract = True
-
 
 
 class User(AbstractUser):
@@ -74,14 +72,14 @@ class User(AbstractUser):
 
     def is_administrator(self):
         return (self.role == self.ADMIN
-                 or self.is_staff
-                 or self.is_superuser)
+                or self.is_staff
+                or self.is_superuser)
 
     def is_moderator(self):
         return (self.role == self.MODERATOR
-                 or self.role == self.ADMIN
-                 or self.is_staff
-                 or self.is_superuser)
+                or self.role == self.ADMIN
+                or self.is_staff
+                or self.is_superuser)
 
     def __str__(self):
         return self.username
@@ -135,7 +133,8 @@ class ReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор'
+        verbose_name='Автор',
+        related_name="%(app_label)s_%(class)s_related"
     )
     text = models.TextField(
         verbose_name='Текст',
@@ -159,16 +158,18 @@ class Review(ReviewComment):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        verbose_name='Произведение'
     )
     score = models.IntegerField(
         validators=[
             MaxValueValidator(10),
             MinValueValidator(1)
-        ]
+        ],
+        verbose_name='Оценка'
     )
 
-    class Meta:
+    class Meta(ReviewComment.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -181,5 +182,6 @@ class Comment(ReviewComment):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comments',
+        verbose_name='Отзыв'
     )
