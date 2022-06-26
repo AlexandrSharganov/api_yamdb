@@ -1,11 +1,12 @@
 from django.forms import ValidationError
 from django.utils import timezone as tz
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
-from .utils import CurrentTitleDefault
+from .utils import CurrentTitleDefault, validate_date_not_in_future
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 
 
@@ -110,15 +111,7 @@ class TitlesSerializer(serializers.ModelSerializer):
             'genre',
             'category'
         )
-        read_only_fields = (
-            'id',
-            'name',
-            'year',
-            'rating',
-            'description',
-            'genre',
-            'category'
-        )
+        read_only_fields = ('__all__',)
 
 
 class TitlesPostSerializer(serializers.ModelSerializer):
@@ -133,6 +126,9 @@ class TitlesPostSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
+    year = serializers.IntegerField(
+        validators = [validate_date_not_in_future]
+    )
 
     class Meta:
         model = Title
@@ -145,13 +141,6 @@ class TitlesPostSerializer(serializers.ModelSerializer):
             'category'
         )
 
-    def validate_year(self, value):
-        if value > tz.now().year:
-            raise serializers.ValidationError(
-                'Нельзя указывать будущую дату!'
-            )
-        return value
-
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -162,7 +151,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     title = serializers.HiddenField(
         default=CurrentTitleDefault()
     )
-
+    score = serializers.IntegerField(
+        validators = [
+            MaxValueValidator(10),
+            MinValueValidator(1),
+            ]
+        )
     class Meta:
         model = Review
         fields = ('id', 'author', 'title', 'text', 'score', 'pub_date')
@@ -170,14 +164,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
                 fields=('author', 'title')
-            )
+            ),
         ]
-
-    def validate_score(self, value):
-        if not 1 <= value <= 10:
-            raise serializers.ValidationError(
-                'Оценка от 1 до 10!')
-        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):

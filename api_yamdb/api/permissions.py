@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class IsModerOrAdminOrSuperOrReadOnly(permissions.BasePermission):
+class IsModerOrAdminOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return (
             request.method in permissions.SAFE_METHODS
@@ -13,7 +13,7 @@ class IsModerOrAdminOrSuperOrReadOnly(permissions.BasePermission):
         )
 
 
-class IsAdminOrSuperOrReadOnly(permissions.BasePermission):
+class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         return(
             request.method in permissions.SAFE_METHODS
@@ -24,17 +24,10 @@ class IsAdminOrSuperOrReadOnly(permissions.BasePermission):
         )
 
 
-class IsAdminOrSuper(permissions.BasePermission):
+class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and (
                 request.user.is_administrator()
             )
-        )
-
-
-class IsAllowedToSignUp(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return (
-            request.user
         )
