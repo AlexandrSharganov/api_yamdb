@@ -3,7 +3,13 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
-from api.utils import validate_date_not_in_future, validate_model_username
+from api.utils import validate_date_not_in_future
+from .utils import validate_username
+from api_yamdb.settings import (
+    USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, CONFIRMATION_CODE_LENGTH,
+    ROLE_MAX_LENGTH, FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH,
+    ALLOWED_SYMBOLS
+)
 
 
 class OnlyNameSlugModel(models.Model):
@@ -31,7 +37,7 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(
-        max_length=9,
+        max_length=ROLE_MAX_LENGTH,
         choices=ROLES,
         default=USER,
     )
@@ -43,32 +49,32 @@ class User(AbstractUser):
 
     email = models.EmailField(
         verbose_name='электронная почта',
-        max_length=254,
+        max_length=EMAIL_MAX_LENGTH,
         unique=True,
     )
 
     confirmation_code = models.CharField(
         verbose_name='код подтверждения',
-        max_length=10,
+        max_length=CONFIRMATION_CODE_LENGTH,
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=FIRST_NAME_MAX_LENGTH,
         blank=True,
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=LAST_NAME_MAX_LENGTH,
         blank=True,
     )
     username = models.CharField(
-        max_length=150,
+        max_length=USERNAME_MAX_LENGTH,
         unique=True,
         validators=[
             RegexValidator(
-                regex=(r'^[a-zA-Z0-9@.+-_]*$'),
+                regex=(ALLOWED_SYMBOLS),
                 message="""Имя пользователя может
                 содержать буквы, цифры, и @.+-_""",
             ),
-            validate_model_username,
+            validate_username,
         ]
     )
 
