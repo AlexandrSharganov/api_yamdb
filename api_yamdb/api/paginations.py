@@ -7,4 +7,3 @@ class TitlesPagination(PageNumberPagination):
 
 class GenresAndCategoriesPagination(PageNumberPagination):
     page_size = 20
-    

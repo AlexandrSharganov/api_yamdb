@@ -1,74 +1,43 @@
-from django.forms import ValidationError
 from django.utils import timezone as tz
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from rest_framework.validators import UniqueTogetherValidator
 
-from .utils import CurrentTitleDefault, validate_date_not_in_future
+from .utils import CurrentTitleDefault, validate_email, validate_username, validate_date_not_in_future
+
 from reviews.models import Title, Genres, Categories, User, Review, Comment
+from api_yamdb.settings import username_max_length, email_max_length
 
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.RegexField(
         regex=r'^[a-zA-Z0-9@.+-_]*$',
-        max_length=150,
+        max_length=username_max_length
     )
     confirmation_code = serializers.CharField()
 
-    def validate_username_for_me(self, data):
-        if self.initial_data['username'] == 'me':
-            raise ValidationError('Юзернейм не может быть "me"!')
-        return data
-
     class Meta:
         required_fields = ('username', 'confirmation_code',)
+        validators = [validate_username]
 
 
 class SignUpSerializer(serializers.Serializer):
     username = serializers.RegexField(
         regex=r'^[a-zA-Z0-9@.+-_]*$',
-        max_length=150,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        max_length=username_max_length,
     )
     email = serializers.EmailField(
-        max_length=254,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        max_length=email_max_length,
     )
-
-    def validate_username(self, data):
-        if self.initial_data['username'] == 'me':
-            raise ValidationError('Юзернейм не может быть "me"!')
-        return data
-
-    def create(self, validated_data):
-        validated_data['confirmation_code'] = self.context.get(
-            'confirmation_code'
-        )
-        return User.objects.create(**validated_data)
 
     class Meta:
         required_fields = ('email', 'username',)
+        validators = [validate_username, validate_email]
 
 
 class UsersSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
-        regex=r'^[a-zA-Z0-9@.+-_]*$',
-        max_length=150,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-
-    def validate_username_for_me(self, data):
-        if self.initial_data['username'] == 'me':
-            raise ValidationError('Юзернейм не может быть "me"!')
-        return data
 
     class Meta:
         model = User

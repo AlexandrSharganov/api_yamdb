@@ -53,22 +53,35 @@ class SignUpViewSet(APIView):
         confirmation_code = get_random_string(length=10)
         serializer = SignUpSerializer(
             data=request.data,
-            context={'confirmation_code': confirmation_code}
+            context={'confirmation_code': confirmation_code},
         )
-        if serializer.is_valid(raise_exception=True):
-            email = serializer.validated_data['email']
-            if User.objects.filter(email=email).exists():
-                send_verification_mail(
-                    email=email,
-                    confirmation_code=confirmation_code,
-                )
-            send_verification_mail(
+        if ('email' in request.data and 'username' in request.data):
+            email = request.data['email']
+            username = request.data['username']
+            send_mail = send_verification_mail(
                 email=email,
                 confirmation_code=confirmation_code,
             )
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if User.objects.filter(email=email, username=username).exists():
+                send_mail
+                return Response(status=status.HTTP_200_OK)
+            if serializer.is_valid():
+                send_mail
+                self.create(
+                    validated_data=serializer.validated_data,
+                    confirmation_code=confirmation_code
+                )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer.is_valid()
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, validated_data, confirmation_code):
+        validated_data['confirmation_code'] = confirmation_code
+        return User.objects.create(**validated_data)
 
 
 class TokenViewSet(APIView):
@@ -76,25 +89,29 @@ class TokenViewSet(APIView):
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.initial_data['username']
-        confirmation_code = serializer.initial_data['confirmation_code']
-        user = get_object_or_404(User, username=username)
-        if user.confirmation_code != confirmation_code:
+        if (
+            'username' in request.data
+            and 'confirmation_code' in request.data
+        ):
+            username = serializer.initial_data['username']
+            confirmation_code = serializer.initial_data['confirmation_code']
+            user = get_object_or_404(User, username=username)
+            if user.confirmation_code != confirmation_code:
+                return Response(
+                    {
+                        'confirmation_code': 'Код подтверждения неверный',
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            refresh = RefreshToken.for_user(user)
             return Response(
                 {
-                    'confirmation_code': 'Код подтверждения неверный',
+                    'token': str(refresh.access_token)
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_200_OK
             )
-
-        refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                'token': str(refresh.access_token)
-            },
-            status=status.HTTP_200_OK
-        )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -119,8 +136,10 @@ class UsersViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = get_object_or_404(User, username=request.user.username)
         if request.method == 'GET':
-            serializer = UsersSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                UsersSerializer(user).data,
+                status=status.HTTP_200_OK
+            )
 
         serializer = UsersSerializer(
             instance=user,
