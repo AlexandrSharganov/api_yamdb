@@ -166,7 +166,6 @@ class Review(ReviewComment):
         Title,
         on_delete=models.CASCADE,
         verbose_name='Произведение',
-        related_name='reviews'
     )
     score = models.IntegerField(
         validators=[
@@ -190,7 +189,6 @@ class Review(ReviewComment):
 class Comment(ReviewComment):
     review = models.ForeignKey(
         Review,
-        related_name='comments',
         on_delete=models.CASCADE,
         verbose_name='Отзыв'
     )
@@ -198,3 +196,4 @@ class Comment(ReviewComment):
     class Meta(ReviewComment.Meta):
         verbose_name = ('комментарий')
         verbose_name_plural = ('комментарии')
+        default_related_name = "%(class)s"
