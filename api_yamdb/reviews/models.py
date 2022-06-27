@@ -92,14 +92,14 @@ class User(AbstractUser):
 
 class Categories(OnlyNameSlugModel):
 
-    class Meta:
+    class Meta(OnlyNameSlugModel.Meta):
         verbose_name = ('категория')
         verbose_name_plural = ('категории')
 
 
 class Genres(OnlyNameSlugModel):
 
-    class Meta:
+    class Meta(OnlyNameSlugModel.Meta):
         verbose_name = ('жанр')
         verbose_name_plural = ('жанры')
 
@@ -161,7 +161,6 @@ class ReviewComment(models.Model):
     class Meta:
         abstract = True
         ordering = ('-pub_date',)
-        default_related_name = "%(class)s"
 
     def __str__(self):
         return self.text[:15]
@@ -181,9 +180,11 @@ class Review(ReviewComment):
         verbose_name='Оценка'
     )
 
+
     class Meta(ReviewComment.Meta):
         verbose_name = ('отзыв')
         verbose_name_plural = ('отзывы')
+        default_related_name = "%(class)ss"
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -202,4 +203,4 @@ class Comment(ReviewComment):
     class Meta(ReviewComment.Meta):
         verbose_name = ('комментарий')
         verbose_name_plural = ('комментарии')
-        default_related_name = "%(class)s"
+        default_related_name = "%(class)ss"
