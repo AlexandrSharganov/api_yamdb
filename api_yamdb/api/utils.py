@@ -29,3 +29,19 @@ def send_verification_mail(email, confirmation_code):
 def validate_date_not_in_future(value):
     if value > tz.now().year:
         raise ValidationError('Нельзя указывать будущую дату!')
+
+
+def validate_username(data):
+    if data['username'] == 'me':
+        raise ValidationError('Имя пользователя не может быть "me"!')
+    if reviews.models.User.objects.filter(
+        username=data['username']
+    ).exists():
+        raise ValidationError('Такое имя пользователя уже есть!')
+    return data
+
+
+def validate_email(data):
+    if reviews.models.User.objects.filter(email=data['email']).exists():
+        raise ValidationError('Такая электронная почта уже используется!')
+    return data
