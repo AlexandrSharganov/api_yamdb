@@ -2,6 +2,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from django.utils import timezone as tz
+from django.core.validators import RegexValidator
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 import reviews.models
@@ -36,6 +37,12 @@ def validate_username(data):
         username=data['username']
     ).exists():
         raise ValidationError('Такое имя пользователя уже есть!')
+    return data
+
+
+def validate_model_username(data):
+    if data == 'me':
+        raise ValidationError('Имя пользователя не может быть "me"!')
     return data
 
 

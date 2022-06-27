@@ -34,9 +34,9 @@ from .filters import GenreFilter
 
 
 class OnlyNameSlugViewSet(mixins.ListModelMixin,
-                       mixins.CreateModelMixin,
-                       mixins.DestroyModelMixin,
-                       viewsets.GenericViewSet):
+                          mixins.CreateModelMixin,
+                          mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
     """Абстрактная вьюха из name и slug."""
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)

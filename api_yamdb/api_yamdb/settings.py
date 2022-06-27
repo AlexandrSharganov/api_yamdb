@@ -127,3 +127,4 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 DEFAULT_FROM_EMAIL = 'yamdb@example.com'
 username_max_length = 150
 email_max_length = 255
+allowed_symbols = r'^[a-zA-Z0-9@.+-_]*$'
