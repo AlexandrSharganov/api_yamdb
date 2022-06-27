@@ -1,4 +1,3 @@
-from django.utils import timezone as tz
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from rest_framework import serializers
@@ -47,23 +46,23 @@ class UsersSerializer(serializers.ModelSerializer):
         )
 
 
-class GenrestSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genres
         fields = ('name', 'slug')
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Categories
         exclude = ('id',)
 
 
-class TitlesSerializer(serializers.ModelSerializer):
-    category = CategoriesSerializer(required=False)
-    genre = GenrestSerializer(
+class TitleSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(required=False)
+    genre = GenreSerializer(
         many=True,
         required=False,
     )
@@ -83,7 +82,7 @@ class TitlesSerializer(serializers.ModelSerializer):
         read_only_fields = ('__all__',)
 
 
-class TitlesPostSerializer(serializers.ModelSerializer):
+class TitlePostSerializer(serializers.ModelSerializer):
     category = SlugRelatedField(
         slug_field='slug',
         queryset=Categories.objects.all(),

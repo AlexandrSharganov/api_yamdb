@@ -25,10 +25,10 @@ from .utils import (
 )
 from reviews.models import Title, Genres, Categories, Review, User
 from .serializers import (
-    TitlesSerializer, GenrestSerializer,
-    CategoriesSerializer, TokenSerializer,
+    TitleSerializer, GenreSerializer,
+    CategorySerializer, TokenSerializer,
     SignUpSerializer, UsersSerializer, ReviewSerializer,
-    CommentSerializer, TitlesPostSerializer
+    CommentSerializer, TitlePostSerializer
 )
 from .filters import GenreFilter
 
@@ -153,7 +153,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
-    serializer_class = TitlesPostSerializer
+    serializer_class = TitlePostSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = TitlesPagination
     filter_backends = (filters.SearchFilter, DjangoFilterBackend,
@@ -164,18 +164,18 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return TitlesSerializer
-        return TitlesPostSerializer
+            return TitleSerializer
+        return TitlePostSerializer
 
 
 class GenresViewSet(OnlyNameSlugViewSet):
     queryset = Genres.objects.all()
-    serializer_class = GenrestSerializer
+    serializer_class = GenreSerializer
 
 
 class CategoriesViewSet(OnlyNameSlugViewSet):
     queryset = Categories.objects.all()
-    serializer_class = CategoriesSerializer
+    serializer_class = CategorySerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
