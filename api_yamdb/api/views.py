@@ -26,7 +26,7 @@ from reviews.models import Title, Genres, Categories, Review, User
 from .serializers import (
     TitleSerializer, GenreSerializer,
     CategorySerializer, TokenSerializer,
-    SignUpSerializer, UsersSerializer, ReviewSerializer,
+    SignUpSerializer, UserSerializer, ReviewSerializer,
     CommentSerializer, TitlePostSerializer
 )
 from .filters import GenreFilter

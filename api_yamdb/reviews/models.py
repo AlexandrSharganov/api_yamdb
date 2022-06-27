@@ -180,7 +180,6 @@ class Review(ReviewComment):
         verbose_name='Оценка'
     )
 
-
     class Meta(ReviewComment.Meta):
         verbose_name = ('отзыв')
         verbose_name_plural = ('отзывы')
