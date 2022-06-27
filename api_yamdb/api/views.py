@@ -11,10 +11,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import mixins, viewsets, filters
+from rest_framework.permissions import AllowAny
 
 from .permissions import (
-    IsModerOrAdminOrSuperOrReadOnly, IsAdminOrSuperOrReadOnly, IsAdminOrSuper,
-    IsAllowedToSignUp,
+    IsModerOrAdminOrReadOnly, IsAdminOrReadOnly, IsAdmin
 )
 from .paginations import (
     GenresAndCategoriesPagination,
@@ -33,7 +33,7 @@ from .serializers import (
 from .filters import GenreFilter
 
 
-class OnlyNameSlugView(mixins.ListModelMixin,
+class OnlyNameSlugViewSet(mixins.ListModelMixin,
                        mixins.CreateModelMixin,
                        mixins.DestroyModelMixin,
                        viewsets.GenericViewSet):
@@ -43,11 +43,11 @@ class OnlyNameSlugView(mixins.ListModelMixin,
     lookup_field = 'slug'
     ordering_fields = ('slug',)
     pagination_class = GenresAndCategoriesPagination
-    permission_classes = (IsAdminOrSuperOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class SignUpViewSet(APIView):
-    permission_classes = (IsAllowedToSignUp,)
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         confirmation_code = get_random_string(length=10)
@@ -85,7 +85,7 @@ class SignUpViewSet(APIView):
 
 
 class TokenViewSet(APIView):
-    permission_classes = (IsAllowedToSignUp,)
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
@@ -117,7 +117,7 @@ class TokenViewSet(APIView):
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrSuper]
+    permission_classes = [IsAuthenticated, IsAdmin]
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = (
@@ -154,7 +154,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     serializer_class = TitlesPostSerializer
-    permission_classes = (IsAdminOrSuperOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = TitlesPagination
     filter_backends = (filters.SearchFilter, DjangoFilterBackend,
                        filters.OrderingFilter)
@@ -168,12 +168,12 @@ class TitlesViewSet(viewsets.ModelViewSet):
         return TitlesPostSerializer
 
 
-class GenresViewSet(OnlyNameSlugView):
+class GenresViewSet(OnlyNameSlugViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenrestSerializer
 
 
-class CategoriesViewSet(OnlyNameSlugView):
+class CategoriesViewSet(OnlyNameSlugViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
 
@@ -182,7 +182,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModerOrAdminOrSuperOrReadOnly]
+        IsModerOrAdminOrReadOnly]
 
     def title_object(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -198,7 +198,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsModerOrAdminOrSuperOrReadOnly]
+        IsModerOrAdminOrReadOnly]
 
     def review_object(self):
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'),

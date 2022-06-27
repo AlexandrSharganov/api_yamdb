@@ -14,9 +14,6 @@ class CurrentTitleDefault:
         title_id = serializer_field.context['view'].kwargs.get('title_id')
         return get_object_or_404(reviews.models.Title, id=title_id)
 
-    def __repr__(self):
-        return '{}'.format(self.__class__.__name__)
-
 
 def send_verification_mail(email, confirmation_code):
     subject = 'Регистрация на сайте'
@@ -28,7 +25,8 @@ def send_verification_mail(email, confirmation_code):
 
 def validate_date_not_in_future(value):
     if value > tz.now().year:
-        raise ValidationError('Нельзя указывать будущую дату!')
+        raise ValidationError(f'Нельзя указывать будущую дату: {value}!')
+    return value
 
 
 def validate_username(data):

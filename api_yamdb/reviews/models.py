@@ -73,30 +73,32 @@ class User(AbstractUser):
     def is_administrator(self):
         return (self.role == self.ADMIN
                 or self.is_staff
-                or self.is_superuser)
+            )
 
     def is_moderator(self):
-        return (self.role == self.MODERATOR
-                or self.role == self.ADMIN
-                or self.is_staff
-                or self.is_superuser)
+        return (self.role == self.MODERATOR)
 
     def __str__(self):
         return self.username
 
 
 class Categories(OnlyNameSlugModel):
-    pass
+
+    class Meta:
+        verbose_name = ('категория')
+        verbose_name_plural = ('категории')
 
 
 class Genres(OnlyNameSlugModel):
-    pass
+
+    class Meta:
+        verbose_name = ('жанр')
+        verbose_name_plural = ('жанры')
 
 
 class Title(models.Model):
     name = models.TextField()
     year = models.IntegerField(
-        null=True,
         validators=[validate_date_not_in_future]
     )
     category = models.ForeignKey(
@@ -108,6 +110,8 @@ class Title(models.Model):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = ('произведение')
+        verbose_name_plural = ('произведения')
 
 
 class GenreTitle(models.Model):
@@ -127,6 +131,8 @@ class GenreTitle(models.Model):
                 name='unique_title_genre'
             ),
         ]
+        verbose_name = ('произведения по жанрам')
+        verbose_name_plural = ('произведения по жанрам')
 
 
 class ReviewComment(models.Model):
@@ -134,7 +140,6 @@ class ReviewComment(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name="%(app_label)s_%(class)s_related"
     )
     text = models.TextField(
         verbose_name='Текст',
@@ -148,7 +153,7 @@ class ReviewComment(models.Model):
     class Meta:
         abstract = True
         ordering = ('-pub_date',)
-        verbose_name = 'Текст'
+        default_related_name = "%(class)s"
 
     def __str__(self):
         return self.text[:15]
@@ -158,8 +163,8 @@ class Review(ReviewComment):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Произведение'
+        verbose_name='Произведение',
+        related_name='reviews'
     )
     score = models.IntegerField(
         validators=[
@@ -170,6 +175,8 @@ class Review(ReviewComment):
     )
 
     class Meta(ReviewComment.Meta):
+        verbose_name = ('отзыв')
+        verbose_name_plural = ('отзывы')
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -181,7 +188,11 @@ class Review(ReviewComment):
 class Comment(ReviewComment):
     review = models.ForeignKey(
         Review,
-        on_delete=models.CASCADE,
         related_name='comments',
+        on_delete=models.CASCADE,
         verbose_name='Отзыв'
     )
+
+    class Meta(ReviewComment.Meta):
+        verbose_name = ('комментарий')
+        verbose_name_plural = ('комментарии')
