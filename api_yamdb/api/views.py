@@ -2,9 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.crypto import get_random_string
-
 from rest_framework import viewsets, status, permissions, filters
-from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -12,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import mixins, viewsets, filters
 from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view
 
 from .permissions import (
     IsModerOrAdminOrReadOnly, IsAdminOrReadOnly, IsAdmin
@@ -46,53 +45,49 @@ class OnlyNameSlugViewSet(mixins.ListModelMixin,
     permission_classes = (IsAdminOrReadOnly,)
 
 
-class SignUpViewSet(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
+@api_view(['POST'])
+def signup(request):
+    if request.method == 'POST':
         confirmation_code = get_random_string(length=10)
         serializer = SignUpSerializer(
             data=request.data,
             context={'confirmation_code': confirmation_code},
         )
-        if ('email' in request.data and 'username' in request.data):
-            email = request.data['email']
-            username = request.data['username']
-            send_mail = send_verification_mail(
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            username = serializer.validated_data['username']
+            if User.objects.filter(email=email, username=username).exists():
+                send_verification_mail(
+                    email=email,
+                    confirmation_code=confirmation_code,
+                )
+                return Response(status=status.HTTP_200_OK)
+            if (User.objects.filter(email=email).exists()
+               or User.objects.filter(username=username).exists()):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            serializer.validated_data['confirmation_code'] = confirmation_code
+            User.objects.create(**serializer.validated_data)
+            send_verification_mail(
                 email=email,
                 confirmation_code=confirmation_code,
             )
-            if User.objects.filter(email=email, username=username).exists():
-                send_mail
-                return Response(status=status.HTTP_200_OK)
-            if serializer.is_valid():
-                send_mail
-                self.create(
-                    validated_data=serializer.validated_data,
-                    confirmation_code=confirmation_code
-                )
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        serializer.is_valid()
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def create(self, validated_data, confirmation_code):
-        validated_data['confirmation_code'] = confirmation_code
-        return User.objects.create(**validated_data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
-class TokenViewSet(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
+@api_view(['POST'])
+@action(
+    detail=False,
+    methods=['POST'],
+    permission_classes=(AllowAny,)
+)
+def token(request):
+    if request.method == 'POST':
         serializer = TokenSerializer(data=request.data)
-        if (
-            'username' in request.data
-            and 'confirmation_code' in request.data
-        ):
+        if serializer.is_valid():
             username = serializer.initial_data['username']
             confirmation_code = serializer.initial_data['confirmation_code']
             user = get_object_or_404(User, username=username)
@@ -114,9 +109,9 @@ class TokenViewSet(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class UsersViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UsersSerializer
+    serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
@@ -137,11 +132,11 @@ class UsersViewSet(viewsets.ModelViewSet):
         user = get_object_or_404(User, username=request.user.username)
         if request.method == 'GET':
             return Response(
-                UsersSerializer(user).data,
+                UserSerializer(user).data,
                 status=status.HTTP_200_OK
             )
 
-        serializer = UsersSerializer(
+        serializer = UserSerializer(
             instance=user,
             data=request.data,
             partial=True,

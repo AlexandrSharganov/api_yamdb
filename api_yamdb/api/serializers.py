@@ -1,45 +1,46 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
-
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
-from .utils import (
-    CurrentTitleDefault, validate_email, validate_username,
-    validate_date_not_in_future
-)
-
+from .utils import (CurrentTitleDefault, validate_date_not_in_future)
+from reviews.utils import validate_username
 from reviews.models import Title, Genres, Categories, User, Review, Comment
-from api_yamdb.settings import username_max_length, email_max_length
+from api_yamdb.settings import (
+    USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, ALLOWED_SYMBOLS,
+    CONFIRMATION_CODE_LENGTH
+)
 
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.RegexField(
         regex=r'^[a-zA-Z0-9@.+-_]*$',
-        max_length=username_max_length
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[validate_username]
     )
-    confirmation_code = serializers.CharField()
+    confirmation_code = serializers.CharField(
+        max_length=CONFIRMATION_CODE_LENGTH
+    )
 
     class Meta:
         required_fields = ('username', 'confirmation_code',)
-        validators = [validate_username]
 
 
 class SignUpSerializer(serializers.Serializer):
     username = serializers.RegexField(
-        regex=r'^[a-zA-Z0-9@.+-_]*$',
-        max_length=username_max_length,
+        regex=ALLOWED_SYMBOLS,
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[validate_username]
     )
     email = serializers.EmailField(
-        max_length=email_max_length,
+        max_length=EMAIL_MAX_LENGTH,
     )
 
     class Meta:
         required_fields = ('email', 'username',)
-        validators = [validate_username, validate_email]
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
