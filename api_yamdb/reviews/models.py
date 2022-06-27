@@ -178,6 +178,7 @@ class Review(ReviewComment):
     class Meta(ReviewComment.Meta):
         verbose_name = ('отзыв')
         verbose_name_plural = ('отзывы')
+        default_related_name = "%(class)ss"
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -196,4 +197,4 @@ class Comment(ReviewComment):
     class Meta(ReviewComment.Meta):
         verbose_name = ('комментарий')
         verbose_name_plural = ('комментарии')
-        default_related_name = "%(class)s"
+        default_related_name = "%(class)ss"
