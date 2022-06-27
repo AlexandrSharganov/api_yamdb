@@ -6,7 +6,6 @@ from django.core.validators import RegexValidator
 from api.utils import validate_date_not_in_future, validate_model_username
 
 
-
 class OnlyNameSlugModel(models.Model):
     """Абстрактная модель из name и slug."""
     name = models.CharField(max_length=256)
@@ -64,10 +63,10 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         validators=[
-            RegexValidator
-            (
+            RegexValidator(
                 regex=(r'^[a-zA-Z0-9@.+-_]*$'),
-                message='Имя пользователя может содержать буквы, цифры, и @.+-_',
+                message="""Имя пользователя может
+                содержать буквы, цифры, и @.+-_""",
             ),
             validate_model_username,
         ]

@@ -2,7 +2,6 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from django.utils import timezone as tz
-from django.core.validators import RegexValidator
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 import reviews.models
