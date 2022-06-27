@@ -19,7 +19,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             request.method in permissions.SAFE_METHODS
             or (
                 request.user.is_authenticated
-                and (request.user.is_administrator())
+                and request.user.is_administrator()
             )
         )
 

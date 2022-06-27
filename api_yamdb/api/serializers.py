@@ -4,7 +4,10 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
-from .utils import CurrentTitleDefault, validate_email, validate_username, validate_date_not_in_future
+from .utils import (
+    CurrentTitleDefault, validate_email, validate_username,
+    validate_date_not_in_future
+)
 
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 from api_yamdb.settings import username_max_length, email_max_length
@@ -95,7 +98,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
         required=False
     )
     year = serializers.IntegerField(
-        validators = [validate_date_not_in_future]
+        validators=[validate_date_not_in_future]
     )
 
     class Meta:
@@ -120,11 +123,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         default=CurrentTitleDefault()
     )
     score = serializers.IntegerField(
-        validators = [
+        validators=[
             MaxValueValidator(10),
             MinValueValidator(1),
-            ]
-        )
+        ]
+    )
+
     class Meta:
         model = Review
         fields = ('id', 'author', 'title', 'text', 'score', 'pub_date')

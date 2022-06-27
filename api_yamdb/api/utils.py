@@ -39,6 +39,12 @@ def validate_username(data):
     return data
 
 
+def validate_model_username(data):
+    if data == 'me':
+        raise ValidationError('Имя пользователя не может быть "me"!')
+    return data
+
+
 def validate_email(data):
     if reviews.models.User.objects.filter(email=data['email']).exists():
         raise ValidationError('Такая электронная почта уже используется!')

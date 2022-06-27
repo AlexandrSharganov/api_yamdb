@@ -34,9 +34,9 @@ from .filters import GenreFilter
 
 
 class OnlyNameSlugViewSet(mixins.ListModelMixin,
-                       mixins.CreateModelMixin,
-                       mixins.DestroyModelMixin,
-                       viewsets.GenericViewSet):
+                          mixins.CreateModelMixin,
+                          mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
     """Абстрактная вьюха из name и slug."""
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -188,7 +188,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
 
     def get_queryset(self):
-        return self.title_object().reviews.all()
+        return self.title_object().review.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.title_object())
@@ -205,7 +205,7 @@ class CommentViewSet(viewsets.ModelViewSet):
                                  title=self.kwargs.get('title_id'))
 
     def get_queryset(self):
-        return self.review_object().comments.all()
+        return self.review_object().comment.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.review_object())
