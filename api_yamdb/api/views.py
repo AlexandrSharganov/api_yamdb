@@ -60,11 +60,6 @@ def signup(request):
     )
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
-    username = serializer.validated_data['username']
-    # if (User.objects.filter(email=email).exists()
-    #         or User.objects.filter(username=username).exists()):
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
-    # serializer.validated_data['confirmation_code'] = confirmation_code
     try:
         User.objects.get_or_create(**serializer.validated_data)
         send_verification_mail(
@@ -74,7 +69,6 @@ def signup(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except ValidationError:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @api_view(['POST'])
