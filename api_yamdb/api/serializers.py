@@ -7,7 +7,8 @@ from .utils import CurrentTitleDefault
 from reviews.utils import validate_username, validate_date_not_in_future
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 from api_yamdb.settings import (
-    USERNAME_MAX_LENGTH, CONFIRMATION_CODE_LENGTH
+    USERNAME_MAX_LENGTH, CONFIRMATION_CODE_LENGTH, ALLOWED_SYMBOLS,
+    EMAIL_MAX_LENGTH
 )
 
 
@@ -24,15 +25,24 @@ class TokenSerializer(serializers.Serializer):
         required_fields = ('username', 'confirmation_code',)
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        regex=ALLOWED_SYMBOLS,
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[validate_username]
+    )
+
+    email = serializers.EmailField(
+        max_length=EMAIL_MAX_LENGTH,
+    )
 
     class Meta:
-        model = User
-        fields = ('email', 'username',)
         required_fields = ('email', 'username',)
 
 
 class UserSerializer(serializers.ModelSerializer):
+    def validate_username(self, data):
+        return validate_username(data)
 
     class Meta:
         model = User

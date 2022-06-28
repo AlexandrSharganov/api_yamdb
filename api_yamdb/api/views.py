@@ -1,4 +1,4 @@
-from django.forms import ValidationError
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
@@ -60,15 +60,20 @@ def signup(request):
     )
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
+    username = serializer.validated_data['username']
     try:
-        User.objects.get_or_create(**serializer.validated_data)
+        username, created = User.objects.get_or_create(
+            username=username,
+            email=email
+        )
+    except IntegrityError:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
         send_verification_mail(
-            email=email,
+            email=username.email,
             confirmation_code=confirmation_code,
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
-    except ValidationError:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -83,6 +88,9 @@ def token(request):
     confirmation_code = serializer.initial_data['confirmation_code']
     user = get_object_or_404(User, username=username)
     if user.confirmation_code != confirmation_code:
+        user.confirmation_code = get_random_string(
+            length=CONFIRMATION_CODE_LENGTH
+        )
         return Response(
             {
                 'confirmation_code': 'Код подтверждения неверный',
