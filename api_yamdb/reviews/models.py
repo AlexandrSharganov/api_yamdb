@@ -1,14 +1,15 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.validators import RegexValidator
+from django.core.validators import (
+    MaxValueValidator, MinValueValidator,
+)
 
 from .utils import (
-    find_max_len_of_roles, validate_username, validate_date_not_in_future
+    validate_username, validate_date_not_in_future
 )
 from api_yamdb.settings import (
     USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, CONFIRMATION_CODE_LENGTH,
-    FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH, ALLOWED_SYMBOLS
+    FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH
 )
 
 
@@ -37,7 +38,7 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(
-        max_length=find_max_len_of_roles(ROLES),
+        max_length=max(len(j) for j in ROLES[1]),
         choices=ROLES,
         default=USER,
     )
@@ -69,11 +70,6 @@ class User(AbstractUser):
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
         validators=[
-            RegexValidator(
-                regex=(ALLOWED_SYMBOLS),
-                message="""Имя пользователя может
-                содержать буквы, цифры, и @.+-_""",
-            ),
             validate_username,
         ]
     )

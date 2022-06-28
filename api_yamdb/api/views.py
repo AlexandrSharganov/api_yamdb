@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
@@ -30,6 +31,7 @@ from .serializers import (
     CommentSerializer, TitlePostSerializer
 )
 from .filters import GenreFilter
+from api_yamdb.settings import CONFIRMATION_CODE_LENGTH
 
 
 class OnlyNameSlugViewSet(mixins.ListModelMixin,
@@ -51,28 +53,28 @@ class OnlyNameSlugViewSet(mixins.ListModelMixin,
     permission_classes=(AllowAny,)
 )
 def signup(request):
-    confirmation_code = get_random_string(length=10)
+    confirmation_code = get_random_string(length=CONFIRMATION_CODE_LENGTH)
     serializer = SignUpSerializer(
         data=request.data,
         context={'confirmation_code': confirmation_code},
     )
-    if serializer.is_valid(raise_exception=True):
-        email = serializer.validated_data['email']
-        username = serializer.validated_data['username']
-        if (User.objects.filter(email=email).exists()
-                or User.objects.filter(username=username).exists()):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        serializer.validated_data['confirmation_code'] = confirmation_code
+    serializer.is_valid(raise_exception=True)
+    email = serializer.validated_data['email']
+    username = serializer.validated_data['username']
+    # if (User.objects.filter(email=email).exists()
+    #         or User.objects.filter(username=username).exists()):
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+    # serializer.validated_data['confirmation_code'] = confirmation_code
+    try:
         User.objects.get_or_create(**serializer.validated_data)
         send_verification_mail(
             email=email,
             confirmation_code=confirmation_code,
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(
-        serializer.errors,
-        status=status.HTTP_400_BAD_REQUEST
-    )
+    except ValidationError:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['POST'])
@@ -82,26 +84,25 @@ def signup(request):
 )
 def token(request):
     serializer = TokenSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-        username = serializer.initial_data['username']
-        confirmation_code = serializer.initial_data['confirmation_code']
-        user = get_object_or_404(User, username=username)
-        if user.confirmation_code != confirmation_code:
-            return Response(
-                {
-                    'confirmation_code': 'Код подтверждения неверный',
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        refresh = RefreshToken.for_user(user)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.initial_data['username']
+    confirmation_code = serializer.initial_data['confirmation_code']
+    user = get_object_or_404(User, username=username)
+    if user.confirmation_code != confirmation_code:
         return Response(
             {
-                'token': str(refresh.access_token)
+                'confirmation_code': 'Код подтверждения неверный',
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_400_BAD_REQUEST
         )
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    refresh = RefreshToken.for_user(user)
+    return Response(
+        {
+            'token': str(refresh.access_token)
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 class UserViewSet(viewsets.ModelViewSet):
