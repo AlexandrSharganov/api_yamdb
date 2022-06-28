@@ -3,8 +3,8 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
-from .utils import (CurrentTitleDefault, validate_date_not_in_future)
-from reviews.utils import validate_username
+from .utils import CurrentTitleDefault
+from reviews.utils import validate_username, validate_date_not_in_future
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 from api_yamdb.settings import (
     USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, ALLOWED_SYMBOLS,

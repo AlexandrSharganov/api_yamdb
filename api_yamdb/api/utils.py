@@ -1,7 +1,5 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
-from django.utils import timezone as tz
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 import reviews.models
@@ -21,9 +19,3 @@ def send_verification_mail(email, confirmation_code):
     from_email = DEFAULT_FROM_EMAIL
     recipient_list = [email, ]
     return send_mail(subject, message, from_email, recipient_list)
-
-
-def validate_date_not_in_future(value):
-    if value > tz.now().year:
-        raise ValidationError(f'Нельзя указывать будущую дату: {value}!')
-    return value

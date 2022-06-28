@@ -3,12 +3,12 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 
-from api.utils import validate_date_not_in_future
-from .utils import validate_username
+from .utils import (
+    find_max_len_of_roles, validate_username, validate_date_not_in_future
+)
 from api_yamdb.settings import (
     USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, CONFIRMATION_CODE_LENGTH,
-    ROLE_MAX_LENGTH, FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH,
-    ALLOWED_SYMBOLS
+    FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH, ALLOWED_SYMBOLS
 )
 
 
@@ -37,7 +37,7 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(
-        max_length=ROLE_MAX_LENGTH,
+        max_length=find_max_len_of_roles(ROLES),
         choices=ROLES,
         default=USER,
     )
@@ -183,7 +183,7 @@ class Review(ReviewComment):
     class Meta(ReviewComment.Meta):
         verbose_name = ('отзыв')
         verbose_name_plural = ('отзывы')
-        default_related_name = "%(class)ss"
+        default_related_name = "reviews"
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -202,4 +202,4 @@ class Comment(ReviewComment):
     class Meta(ReviewComment.Meta):
         verbose_name = ('комментарий')
         verbose_name_plural = ('комментарии')
-        default_related_name = "%(class)ss"
+        default_related_name = "comments"
