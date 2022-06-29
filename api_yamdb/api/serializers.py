@@ -4,12 +4,11 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 from .utils import CurrentTitleDefault
-from reviews.utils import validate_username, validate_date_not_in_future
 from reviews.models import Title, Genres, Categories, User, Review, Comment
 from api_yamdb.settings import (
-    USERNAME_MAX_LENGTH, CONFIRMATION_CODE_LENGTH, ALLOWED_SYMBOLS,
-    EMAIL_MAX_LENGTH
+    USERNAME_MAX_LENGTH, CONFIRMATION_CODE_LENGTH, EMAIL_MAX_LENGTH,
 )
+from reviews.utils import validate_username, validate_date_not_in_future
 
 
 class TokenSerializer(serializers.Serializer):
@@ -26,8 +25,7 @@ class TokenSerializer(serializers.Serializer):
 
 
 class SignUpSerializer(serializers.Serializer):
-    username = serializers.RegexField(
-        regex=ALLOWED_SYMBOLS,
+    username = serializers.CharField(
         max_length=USERNAME_MAX_LENGTH,
         validators=[validate_username]
     )

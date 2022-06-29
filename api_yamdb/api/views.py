@@ -1,37 +1,25 @@
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action, api_view
 from django.db.models import Avg
+from reviews.models import Categories, Genres, Review, Title, User
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, permissions, status, viewsets
+from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from rest_framework import viewsets, status, permissions, filters
-from rest_framework.permissions import IsAuthenticated
+from django.db import IntegrityError
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import mixins, viewsets, filters
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view
 
-from .permissions import (
-    IsModerOrAdminOrReadOnly, IsAdminOrReadOnly, IsAdmin
-)
-from .paginations import (
-    GenresAndCategoriesPagination,
-    TitlesPagination
-)
-from .utils import (
-    send_verification_mail
-)
-from reviews.models import Title, Genres, Categories, Review, User
-from .serializers import (
-    TitleSerializer, GenreSerializer,
-    CategorySerializer, TokenSerializer,
-    SignUpSerializer, UserSerializer, ReviewSerializer,
-    CommentSerializer, TitlePostSerializer
-)
-from .filters import GenreFilter
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer, SignUpSerializer,
+                          TitlePostSerializer, TitleSerializer,
+                          TokenSerializer, UserSerializer)
 from api_yamdb.settings import CONFIRMATION_CODE_LENGTH
+from .filters import GenreFilter
+from .paginations import GenresAndCategoriesPagination, TitlesPagination
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsModerOrAdminOrReadOnly
+from .utils import send_verification_mail
 
 
 class OnlyNameSlugViewSet(mixins.ListModelMixin,
@@ -67,7 +55,9 @@ def signup(request):
             email=email
         )
     except IntegrityError:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'Пользователь с такой почтой уже зарегистрирован!'},
+            status=status.HTTP_400_BAD_REQUEST)
     else:
         send_verification_mail(
             email=username.email,
@@ -88,9 +78,11 @@ def token(request):
     confirmation_code = serializer.initial_data['confirmation_code']
     user = get_object_or_404(User, username=username)
     if user.confirmation_code != confirmation_code:
-        user.confirmation_code = get_random_string(
+        User.objects.filter(
+            username=user.username
+        ).update(confirmation_code=get_random_string(
             length=CONFIRMATION_CODE_LENGTH
-        )
+        ))
         return Response(
             {
                 'confirmation_code': 'Код подтверждения неверный',

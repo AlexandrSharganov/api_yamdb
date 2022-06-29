@@ -1,15 +1,15 @@
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.core.validators import (
     MaxValueValidator, MinValueValidator,
 )
+from django.db import models
 
-from .utils import (
-    validate_username, validate_date_not_in_future
-)
 from api_yamdb.settings import (
     USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, CONFIRMATION_CODE_LENGTH,
     FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH
+)
+from .utils import (
+    validate_username, validate_date_not_in_future
 )
 
 
@@ -32,13 +32,13 @@ class User(AbstractUser):
     MODERATOR = 'moderator'
     ADMIN = 'admin'
     ROLES = [
-        (USER, 'user'),
-        (MODERATOR, 'moderator'),
-        (ADMIN, 'admin'),
+        (USER, 'пользователь'),
+        (MODERATOR, 'важный пользователь, модератор'),
+        (ADMIN, 'самый важный пользователь, администратор'),
     ]
 
     role = models.CharField(
-        max_length=max([len(max(i)) for i in ROLES]),
+        max_length=max(len(role) for role, _ in ROLES),
         choices=ROLES,
         default=USER,
     )
