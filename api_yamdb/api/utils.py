@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
-import reviews.models
+from reviews.models import Title
 
 
 class CurrentTitleDefault:
@@ -10,7 +10,7 @@ class CurrentTitleDefault:
 
     def __call__(self, serializer_field):
         title_id = serializer_field.context['view'].kwargs.get('title_id')
-        return get_object_or_404(reviews.models.Title, id=title_id)
+        return get_object_or_404(Title, id=title_id)
 
 
 def send_verification_mail(email, confirmation_code):

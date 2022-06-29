@@ -1,25 +1,26 @@
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.decorators import action, api_view
+from django.db import IntegrityError
 from django.db.models import Avg
-from reviews.models import Categories, Genres, Review, Title, User
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, status, viewsets
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from django.db import IntegrityError
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework.decorators import action, api_view
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
+from .filters import GenreFilter
+from .paginations import GenresAndCategoriesPagination, TitlesPagination
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsModerOrAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, SignUpSerializer,
                           TitlePostSerializer, TitleSerializer,
                           TokenSerializer, UserSerializer)
-from api_yamdb.settings import CONFIRMATION_CODE_LENGTH
-from .filters import GenreFilter
-from .paginations import GenresAndCategoriesPagination, TitlesPagination
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsModerOrAdminOrReadOnly
 from .utils import send_verification_mail
+from api_yamdb.settings import CONFIRMATION_CODE_LENGTH
+from reviews.models import Categories, Genres, Review, Title, User
 
 
 class OnlyNameSlugViewSet(mixins.ListModelMixin,
@@ -56,7 +57,7 @@ def signup(request):
         )
     except IntegrityError:
         return Response(
-            {'Пользователь с такой почтой уже зарегистрирован!'},
+            'Пользователь с такой почтой или ником уже зарегистрирован!',
             status=status.HTTP_400_BAD_REQUEST)
     else:
         send_verification_mail(
@@ -78,11 +79,10 @@ def token(request):
     confirmation_code = serializer.initial_data['confirmation_code']
     user = get_object_or_404(User, username=username)
     if user.confirmation_code != confirmation_code:
-        User.objects.filter(
-            username=user.username
-        ).update(confirmation_code=get_random_string(
+        user.confirmation_code = get_random_string(
             length=CONFIRMATION_CODE_LENGTH
-        ))
+        )
+        user.save()
         return Response(
             {
                 'confirmation_code': 'Код подтверждения неверный',

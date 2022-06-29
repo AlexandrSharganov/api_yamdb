@@ -4,12 +4,12 @@ from django.core.validators import (
 )
 from django.db import models
 
+from .utils import (
+    validate_username, validate_date_not_in_future
+)
 from api_yamdb.settings import (
     USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH, CONFIRMATION_CODE_LENGTH,
     FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH
-)
-from .utils import (
-    validate_username, validate_date_not_in_future
 )
 
 
