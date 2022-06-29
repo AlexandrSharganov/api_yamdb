@@ -35,6 +35,6 @@ python manage.py runserver
 ```
 ---
 ## Разработчики:
--[Александр Шарганов](https://github.com/AlexandrSharganov)
--[Станислав Савицкий](https://github.com/fifififanfanfan)
--[ван Чугунов](https://github.com/fifififanfanfan)
+- [Александр Шарганов](https://github.com/AlexandrSharganov)
+- [Станислав Савицкий](https://github.com/fifififanfanfan)
+- [Иван Чугунов](https://github.com/fifififanfanfan)
